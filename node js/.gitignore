@@ -1,0 +1,46 @@
+# Node modules
+node_modules/
+
+# דפוסים של קבצים זמניים או לא חשובים
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# קבצים של התקנת סביבה
+.env
+
+# קבצים/תיקיות של IDEs
+.vscode/
+.idea/
+
+# קבצי OS - קבצים שנוצרים על ידי מערכת ההפעלה
+.DS_Store
+Thumbs.db
+
+# תיקיות/קבצים של מערכת הפעלה כמו Mac ו-Windows
+*.swp
+*.swo
+
+# תיקיות בנייה (build) אם יש
+dist/
+build/
+
+# קבצים שנוצרים על ידי process managers (כמו PM2)
+pids/
+*.pid
+*.seed
+
+# קבצים של TypeScript (אם יש)
+*.tsbuildinfo
+
+# קבצים/תיקיות עבור ביצועי הריצה של Docker
+docker-compose.override.yml
+Dockerfile*
+
+# הקבצים של dependency managers שונים
+pnpm-lock.yaml
+package-lock.json
+
+# קבצים של נתונים זמניים
+tmp/
+temp/
