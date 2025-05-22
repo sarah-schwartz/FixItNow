@@ -22,7 +22,7 @@ const cardData = [
     {
         icon: <PlusCircleOutlined style={{ fontSize: '3.5rem', color: '#1677ff' }} />,
         title: 'הגשת בקשה',
-        link: '/new-request'
+        link: '/AddRequest'
     },
     {
         icon: <ClockCircleOutlined style={{ fontSize: '3.5rem', color: '#1677ff' }} />,

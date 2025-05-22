@@ -6,7 +6,6 @@ import BasicFields from './BasicFields';
 import CategoryFields from './CategoryFields';
 import DescriptionField from './DescriptionField';
 import FormActions from './FormActions';
-
 import { categories, CATEGORY_FIELDS } from './FormConstants';
 
 const AddRequestForm = () => {
