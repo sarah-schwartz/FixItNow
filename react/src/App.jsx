@@ -4,13 +4,12 @@ import Header from './Components/Header'
 import React, { Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 
-const LazyLogin=React.lazy(()=>import("./components/Login"))
+const LazyLogin=React.lazy(()=>import("./Components/Login"))
 const LazySignin=React.lazy(()=>import("./Components/SignIn"))
 const LazyHomePage=React.lazy(()=>import("./Components/HomePage"))
 const LazyMyRequests=React.lazy(()=>import("./Components/MyRequests"))
 const LazyPage404=React.lazy(()=>import("./Components/NotFound"))
 const LazyRequestDetailes=React.lazy(()=>import("./Components/RequestDetailes"))
-
 function App() {
   return (
     <>
