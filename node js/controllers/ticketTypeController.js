@@ -1,5 +1,5 @@
 const res = require("express/lib/response")
-const TicketType = require("../models/TicketTypeModel")
+const TicketType = require("../models/TicketType")
 
 
 async function addTicketType(req,res){

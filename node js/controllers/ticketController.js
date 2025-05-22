@@ -1,4 +1,4 @@
-const Ticket = require('../models/ticketModel'); 
+const Ticket = require('../models/Ticket'); 
 async function addTicket(req, res) {
     try {
         const { description, status = 'open', createdBy, assignedTo, responses = [] } = req.body;

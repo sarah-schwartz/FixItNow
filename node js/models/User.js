@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const UserModel = mongoose.Schema({
+const UserSchema = mongoose.Schema({
     userName:{type: String, required: true,minLength:2},
     password: {type: String,minLength:6,required: function() {
           // אם יש googleId, הסיסמה לא נדרשת
@@ -14,4 +14,4 @@ const UserModel = mongoose.Schema({
     },
     googleId: String,
 }, { timestamps: true });
-module.exports = mongoose.model("User",UserModel)
+module.exports = mongoose.model("User",UserSchema)

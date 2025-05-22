@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const ResponseModel = mongoose.Schema({
+const ResponseSchema = mongoose.Schema({
     ticketId: {type: mongoose.Schema.Types.ObjectId, ref: 'Ticket', required: true },
     sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -8,4 +8,4 @@ const ResponseModel = mongoose.Schema({
     responses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Response' }]
 }, { timestamps: true });
 
-module.exports = mongoose.model("Ticket", ResponseModel);
+module.exports = mongoose.model("Ticket", ResponseSchema);

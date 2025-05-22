@@ -1,5 +1,5 @@
 const res = require("express/lib/response")
-const Response = require("../models/responseModel")
+const Response = require("../models/Response")
 
 async function getResponseByID(req,res){
     let response = await Response.find(req.params)

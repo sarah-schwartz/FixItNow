@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const TicketTypeModel = new mongoose.Schema({
+const TicketTypeSchema = new mongoose.Schema({
   name: { 
     type: String, 
     enum: ['permissions', 'changes', 'database_access', 'file_directory_access', 'code_help', 'technical_help', 'change_request', 'other'], 
@@ -13,4 +13,4 @@ const TicketTypeModel = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model("TicketType", TicketTypeModel);
+module.exports = mongoose.model("TicketType", TicketTypeSchema);

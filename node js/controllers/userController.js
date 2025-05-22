@@ -1,5 +1,5 @@
 const res = require("express/lib/response")
-const User = require("../models/UserModel")
+const User = require("../models/User")
 
 
 async function addUser(req,res){
