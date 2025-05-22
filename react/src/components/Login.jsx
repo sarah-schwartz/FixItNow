@@ -1,132 +1,152 @@
-import "../css/Login.css";
-import React from 'react';
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Form, Input, Flex,Layout } from 'antd';
-import { updateName, updateRole } from "../Store/UserSlice";
-import { useDispatch } from 'react-redux';
-import { Link,useNavigate} from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Form, Input, Checkbox, Button, Layout, Card, Space, Divider } from 'antd';
+import { UserOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons';
+import { useForm, Controller } from 'react-hook-form';
+import axios from 'axios';
+
 
 const Login = () => {
-  const [form] = Form.useForm(); // מוסיפים את form instance
-  const dispatch = useDispatch();
-  const navigate=useNavigate();
-
-  const handleSubmit = async (values) => {
-    try {
-      debugger
-      const response = await fetch("http://localhost:8080/auth/login" , {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ userName: values.username, password: values.password })
-      });
-
-      const result = await response.json();
-      console.log("התגובה מהשרת:", result);
-
-
-    if (response.ok && result) {
-      // כאן אפשר לפענח את הטוקן אם צריך או לשמור אותו
-      localStorage.setItem("token", result.token);
-
-      // if (result.password === values.password) {
-      //   dispatch(updateName(result.name));
-      //   dispatch(updateRole(result.role));
-        navigate("/HomePage");
-      } else {
-        // קביעת שגיאה בשדה הסיסמה
-        form.setFields([
-          {
-            name: 'password',
-            errors: ['סיסמה שגויה. נסה שוב.'],
-          },
-        ]);
-      }
-      
-    } catch (err) {
-      console.error("שגיאה בשליחה לשרת:", err);
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const { control, handleSubmit, formState: { errors } } = useForm({
+    defaultValues: {
+      username: '',
+      password: '',
+      remember: true
     }
-  };
+  });
 
-  const onFinish = (values) => {
-    debugger
-    console.log('Received values of form: ', values);
-    handleSubmit(values);
+const onSubmit = async (data) => {
+  setIsLoading(true);
+  try {
+    const response = await axios.post("http://localhost:8080/auth/login", {
+      userName: data.username,
+      password: data.password
+    });
+
+    const result = response.data;
+
+    if (response.status === 200 && result) {
+      localStorage.setItem("token", result.token);
+      navigate("/HomePage");
+    } else {
+      throw new Error('שם משתמש או סיסמה שגויים');
+    }
+  } catch (err) {
+    console.error("שגיאה בשליחה לשרת:", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+  const handleGoogleLogin = () => {
+    window.location.href = "http://localhost:8080/auth/google";
   };
 
   return (
-    <Layout
-            style={{
-                minHeight: '85vh',
-                width: '100vw',
-                padding: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                margin: 0,
-                background:'rgb(226, 226, 226)',
-                justifyContent: 'center',
-                flexDirection:'row',
-                 flexWrap: 'wrap',
-                alignContent: 'center'
-            }}
-        >
+    <Layout style={{ 
+      minHeight: '100vh',
+      background: '#f0f2f5',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center'
+    }}>
+      <Card style={{ 
+        width: 400,
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+        borderRadius: '12px'
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1a1a1a' }}>כניסה</h2>
+          <p style={{ color: '#666' }}>ברוכים הבאים, אנא הכנס לחשבונך</p>
+        </div>
 
-<div style={{ direction: 'rtl', textAlign: 'right',padding: '3%',backgroundColor:'white',width:'30vw',height:'60vh',borderRadius:'10px' }}>
-      <Form
-        form={form} // מחברים את ה־form instance
-        name="login"
-        initialValues={{ remember: true }}
-        style={{ maxWidth: 360 }}
-        onFinish={onFinish}
-      >
-        <div className="loginFont">כניסה</div>
-        <Form.Item
-          name="username"
-          rules={[{ required: true, message: 'הכנס את שמך בבקשה!' }]}
-        >
-          <Input prefix={<UserOutlined />} placeholder="שם משתמש" />
-        </Form.Item>
+        <form onSubmit={handleSubmit(onSubmit)} dir="rtl">
+          <div style={{ marginBottom: 24 }}>
+            <Controller
+              name="username"
+              control={control}
+              rules={{ required: 'יש להזין שם משתמש' }}
+              render={({ field }) => (
+                <Form.Item validateStatus={errors.username ? 'error' : ''} help={errors.username?.message}>
+                  <Input
+                    {...field}
+                    prefix={<UserOutlined />}
+                    placeholder="שם משתמש"
+                    size="large"
+                  />
+                </Form.Item>
+              )}
+            />
+          </div>
 
-        <Form.Item
-          name="password"
-          rules={[{ required: true, message: 'הכנס סיסמא בבקשה!' }]}
-        >
-          <Input prefix={<LockOutlined />} type="password" placeholder="סיסמא" />
-        </Form.Item>
+          <div style={{ marginBottom: 24 }}>
+            <Controller
+              name="password"
+              control={control}
+              rules={{ required: 'יש להזין סיסמה' }}
+              render={({ field }) => (
+                <Form.Item validateStatus={errors.password ? 'error' : ''} help={errors.password?.message}>
+                  <Input.Password
+                    {...field}
+                    prefix={<LockOutlined />}
+                    placeholder="סיסמה"
+                    size="large"
+                  />
+                </Form.Item>
+              )}
+            />
+          </div>
 
-        <Form.Item>
-          <Flex justify="space-between" align="center">
-            <Form.Item name="remember" valuePropName="checked" noStyle>
-              <Checkbox>זכור אותי</Checkbox>
-            </Form.Item>
-            <a href="">שכחת סיסמא?</a>
-          </Flex>
-        </Form.Item>
-            <Button
-              style={{ width: '100%', marginTop: '1rem', backgroundColor: '#db4437', color: 'white',margin:'10px',height:'35px',left:'7px' }}
-              onClick={() => {
-                window.location.href = "http://localhost:8080/auth/google";
-                }}>
-                  כניסה עם Google
-            </Button>
-        <Form.Item>
-          <Button block type="primary" htmlType="submit">
+          <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 24 }}>
+            <Controller
+              name="remember"
+              control={control}
+              render={({ field: { value, onChange } }) => (
+                <Checkbox checked={value} onChange={onChange}>
+                  זכור אותי
+                </Checkbox>
+              )}
+            />
+            <Link to="/forgot-password" style={{ color: '#1890ff' }}>
+              שכחת סיסמה?
+            </Link>
+          </Space>
+
+          <Button
+            type="primary"
+            htmlType="submit"
+            style={{ width: '100%', height: '40px', marginBottom: 24 }}
+            loading={isLoading}
+          >
             כניסה
           </Button>
-          או  
-          <Link to={`/SignIn`} >
-          {/* או <div>הרשם עכשיו</div> */}
-        <a href="">  הרשם עכשיו</a>
-          </Link>
-          
-        </Form.Item>
-      </Form>
-    </div>
 
-        </Layout>
-    
+          <Divider>או</Divider>
+
+          <Button
+            icon={<GoogleOutlined />}
+            onClick={handleGoogleLogin}
+            style={{ 
+              width: '100%',
+              height: '40px',
+              background: '#fff',
+              borderColor: '#d9d9d9',
+              marginBottom: 24
+            }}
+          >
+            התחברות עם Google
+          </Button>
+
+          <div style={{ textAlign: 'center' }}>
+            אין לך חשבון?{' '}
+            <Link to="/SignIn" style={{ color: '#1890ff' }}>
+              הרשם עכשיו
+            </Link>
+          </div>
+        </form>
+      </Card>
+    </Layout>
   );
 };
 
