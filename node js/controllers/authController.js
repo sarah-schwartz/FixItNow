@@ -28,7 +28,7 @@ const register = async (req,res)=>{
             process.env.JWT_SECRET,
             { expiresIn: "1d" }
         );
-        return res.status(201).json({
+        return res.status(200).json({
             message: `New user ${user.userName} created`,
             token,
         });

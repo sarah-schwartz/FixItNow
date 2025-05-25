@@ -4,6 +4,8 @@ import { Form, Input, Select, Button, Layout, Card, Divider } from 'antd';
 import { UserOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons';
 import { useForm, Controller } from 'react-hook-form';
 import axios from 'axios';
+import { updateUser } from '../Store/UserSlice';
+import { useSelector, useDispatch } from 'react-redux';
 
 
 const { Option } = Select;
@@ -11,6 +13,7 @@ const { Option } = Select;
 const SignIn = () => {
 
   const navigate = useNavigate();
+  const dispatch=useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const { control, handleSubmit, watch, formState: { errors } } = useForm({
     defaultValues: {
@@ -30,6 +33,7 @@ const onSubmit = async (data) => {
     const response = await axios.post("http://localhost:8080/auth/register", cleanedValues);
 
     if (response.status === 200) {
+      dispatch(updateUser({name:data.userName,role:data.role}))
       navigate("/HomePage");
     } else {
       throw new Error('ההרשמה נכשלה');

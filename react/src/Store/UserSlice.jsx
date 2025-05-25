@@ -12,6 +12,10 @@ const UserSlice = createSlice({
         updateUser:(state,action)=>{
             state.name=action.payload.name;
             state.role=action.payload.role;
+            console.log(state.name+" "+state.role)
+        },
+        getUser:(state,action)=>{
+            return state.name;
         },
         updateName: (state, action) => {
             state.name = action.payload; // קבלת שם מהפעולה
@@ -30,5 +34,5 @@ const UserSlice = createSlice({
     }
 });
 
-export const { updateName, updateEmail, createUser, resetUser,updateRole ,getRole} = UserSlice.actions;
+export const { updateName, updateEmail, createUser, resetUser,updateRole ,getRole,updateUser} = UserSlice.actions;
 export default UserSlice.reducer;
