@@ -5,12 +5,12 @@ import { UserOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons';
 import { useForm, Controller } from 'react-hook-form';
 import axios from 'axios';
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
-
-
 const { Option } = Select;
 
 const SignIn = () => {
+
   const navigate = useNavigate();
+  const dispatch=useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const { control, handleSubmit, watch, formState: { errors } } = useForm({
     defaultValues: {
@@ -30,6 +30,7 @@ const onSubmit = async (data) => {
     const response = await axios.post(`${baseUrl}/auth/register`, cleanedValues);
 
     if (response.status === 200) {
+      dispatch(updateUser({name:data.userName,role:data.role}))
       navigate("/HomePage");
     } else {
       throw new Error('ההרשמה נכשלה');

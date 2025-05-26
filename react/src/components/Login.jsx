@@ -3,12 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Form, Input, Checkbox, Button, Layout, Card, Space, Divider } from 'antd';
 import { UserOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons';
 import { useForm, Controller } from 'react-hook-form';
+import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
 
 const Login = () => {
   const navigate = useNavigate();
+  const dispatch=useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const { control, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
@@ -30,6 +32,9 @@ const onSubmit = async (data) => {
 
     if (response.status === 200 && result) {
       localStorage.setItem("token", result.token);
+      debugger
+      const user = await axios.get("http://localhost:8080/User/getUserbyName/"+data.username);
+      dispatch(updateUser({name:data.username,role:user.data.role}));
       navigate("/HomePage");
     } else {
       throw new Error('שם משתמש או סיסמה שגויים');
