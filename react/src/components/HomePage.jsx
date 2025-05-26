@@ -202,7 +202,7 @@ const HomePage = () => {
         try {
           const response = await axios.get("http://localhost:8080/User/getUserbyId/" + decoded.id);
           const user = response.data;
-          dispatch(updateUser({ name: user.userName, role: user.role }));
+          dispatch(updateUser({ name: user.userName, role: user.role,token:token}));
         } catch (error) {
           console.error("Error fetching user:", error);
         }

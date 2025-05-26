@@ -2,7 +2,8 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialValue = {
     name: "אורח",
-    role: "development"
+    role: "development",
+    token: null
 };
 
 const UserSlice = createSlice({
@@ -12,7 +13,8 @@ const UserSlice = createSlice({
         updateUser:(state,action)=>{
             state.name=action.payload.name;
             state.role=action.payload.role;
-            console.log(state.name)
+            state.token=action.payload.token;
+            console.log(state.token)
         },
         getUser:(state,action)=>{
             return state.name;

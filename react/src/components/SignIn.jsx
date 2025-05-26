@@ -32,7 +32,8 @@ const onSubmit = async (data) => {
     const response = await axios.post(`${baseUrl}/auth/register`, cleanedValues);
 
       if (response.status === 200) {
-        dispatch(updateUser({ name: data.userName, role: data.role }))
+        debugger
+        dispatch(updateUser({ name: data.userName, role: data.role ,token:response.data.token}))
         navigate("/HomePage");
       } else {
         throw new Error('ההרשמה נכשלה');

@@ -35,7 +35,7 @@ const onSubmit = async (data) => {
       localStorage.setItem("token", result.token);
       debugger
       const user = await axios.get("http://localhost:8080/User/getUserbyName/"+data.username);
-      dispatch(updateUser({name:data.username,role:user.data.role}));
+      dispatch(updateUser({name:data.username,role:user.data.role,token:user.data.token}));
       navigate("/HomePage");
     } else {
       throw new Error('שם משתמש או סיסמה שגויים');
