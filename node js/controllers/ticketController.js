@@ -1,6 +1,8 @@
 const Ticket = require('../models/Ticket'); 
 async function addTicket(req, res) {
     try {
+        console.log("New request:", req.body);
+
         const { description, status = 'open', createdBy, assignedTo, responses = [] } = req.body;
 
         if (  !description || !createdBy) {
