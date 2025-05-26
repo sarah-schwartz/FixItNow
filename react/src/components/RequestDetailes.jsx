@@ -201,7 +201,7 @@ const TicketDetails = () => {
                       <Text>{formatDate(res.createdAt)}</Text>
                     </Col>
                     <Col>
-                      <Text strong>ע"י</Text><br />
+                      <Text strong>נציג</Text><br />
                       <Text>{res.author}</Text>
                     </Col>
                   </Row>

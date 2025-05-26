@@ -10,6 +10,7 @@ function createToken(req, res, next) {
         }
         const token = jwt.sign({ userName }, process.env.JWT_SECRET, { expiresIn: "1d" });
         req.token = token;
+        
         next();
     } catch (error) {
         res.status(500).json({ message: "Error creating token", error });

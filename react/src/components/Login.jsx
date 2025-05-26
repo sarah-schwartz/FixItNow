@@ -6,6 +6,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
+import { updateUser } from '../Store/UserSlice';
 
 
 const Login = () => {

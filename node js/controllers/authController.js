@@ -4,9 +4,9 @@ const User = require("../models/User")
 
 const register = async (req,res)=>{
     
-    const {userName, password,role} = req.body
+    const {userName, password,role, email} = req.body
 
-    if (!role || !userName || !password) {
+    if (!role || !userName || !password || !email) {
         return res.status(400).json({message:'All fields are required'+req.body.role})
     }
 
@@ -16,13 +16,14 @@ const register = async (req,res)=>{
     }
 
     const hashedPwd = await bcrypt.hash(password, 10)
-    const userObject= {userName,password:hashedPwd,role}
+    const userObject= {userName,password:hashedPwd,role,email}
     const user = await User.create(userObject)
     if (user) { 
         const token = jwt.sign(
             {
                 userName: user.userName,
                 role: user.role,
+                email: user.email,
                 id: user._id
             },
             process.env.JWT_SECRET,
@@ -41,7 +42,7 @@ const register = async (req,res)=>{
 const login = async (req, res) => {
     const { userName, password } = req.body;
 
-    if (!userName || !password) {
+    if (!userName || !password ) {
         return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -59,6 +60,7 @@ const login = async (req, res) => {
         {
             userName: foundUser.userName,
             role: foundUser.role,
+            email: foundUser.email,
             id: foundUser._id
         },
         process.env.JWT_SECRET,

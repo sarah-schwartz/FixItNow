@@ -1,8 +1,9 @@
 const express = require("express")
 const router = express.Router()
-const { addUser,getUserbyName} = require("../controllers/userController")
+const {getUserbyName,getUserbyId} = require("../controllers/userController")
 
-router.post("/addUser", addUser)
 router.get("/getUserByName/:userName",getUserbyName)
+router.get("/getUserById/:id",getUserbyId)
+
 
 module.exports = router

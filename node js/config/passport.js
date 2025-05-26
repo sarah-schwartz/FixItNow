@@ -11,14 +11,23 @@ passport.use(new GoogleStrategy({
   callbackURL: "/auth/google/callback"
 },
   async (accessToken, refreshToken, profile, done) => {
-    let user = await User.findOne({ googleId: profile.id });
-    if (!user) {
-      user = await User.create({
-        userName: profile.displayName,
-        googleId: profile.id,
-        role: "developer",
-      });
+    try {
+      let user = await User.findOne({ googleId: profile.id });
+
+      if (!user) {
+        const email = profile.emails && profile.emails.length > 0 ? profile.emails[0].value : undefined;
+
+        user = await User.create({
+          userName: profile.displayName,
+          email: email,
+          googleId: profile.id,
+          role: "developer",
+        });
+      }
+
+      return done(null, user);
+    } catch (err) {
+      return done(err, null);
     }
-    return done(null, user);
   }
 ));

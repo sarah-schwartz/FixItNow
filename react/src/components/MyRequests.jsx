@@ -3,7 +3,7 @@ import { Table, Tag, Space, Layout, Select, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
 const { Search } = Input;
-
+//const columns = await axios.get("http://localhost:8080/TicketType/getAllTicketsByUserID/"+data.username);
 const columns = [
   {
     title: 'שם עובד',

@@ -1,4 +1,5 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const { requiredPaths } = require('./Field');
 
 const UserSchema = mongoose.Schema({
     userName:{type: String, required: true,minLength:2},
@@ -12,6 +13,11 @@ const UserSchema = mongoose.Schema({
         enum: ['admin', 'developer', 'support'],
         required: true
     },
+    email: {
+  type: String,
+  required: true,
+  match: [/.+@.+\..+/, "Please enter a valid email address"]
+},
     googleId: String,
 }, { timestamps: true });
 module.exports = mongoose.model("User",UserSchema)

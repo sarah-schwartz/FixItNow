@@ -12,7 +12,7 @@ const UserSlice = createSlice({
         updateUser:(state,action)=>{
             state.name=action.payload.name;
             state.role=action.payload.role;
-            console.log(state.name+" "+state.role)
+            console.log(state.name)
         },
         getUser:(state,action)=>{
             return state.name;

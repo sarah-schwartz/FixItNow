@@ -1,23 +1,25 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Form, Input, Select, Button, Layout, Card, Divider } from 'antd';
-import { UserOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, GoogleOutlined, MailOutlined, RollbackOutlined, SelectOutlined, TeamOutlined } from '@ant-design/icons';
 import { useForm, Controller } from 'react-hook-form';
+import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 const { Option } = Select;
+import { updateUser } from '../Store/UserSlice';
 
 const SignIn = () => {
 
   const navigate = useNavigate();
-  const dispatch=useDispatch();
+  const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const { control, handleSubmit, watch, formState: { errors } } = useForm({
     defaultValues: {
       userName: '',
       password: '',
+      email: '',
       confirm: '',
-      role: ''
     }
   });
 
@@ -29,31 +31,32 @@ const onSubmit = async (data) => {
     const { confirm, ...cleanedValues } = data;
     const response = await axios.post(`${baseUrl}/auth/register`, cleanedValues);
 
-    if (response.status === 200) {
-      dispatch(updateUser({name:data.userName,role:data.role}))
-      navigate("/HomePage");
-    } else {
-      throw new Error('ההרשמה נכשלה');
+      if (response.status === 200) {
+        dispatch(updateUser({ name: data.userName, role: data.role }))
+        navigate("/HomePage");
+      } else {
+        throw new Error('ההרשמה נכשלה');
+      }
+    } catch (err) {
+      console.error("שגיאה בשליחה לשרת:", err);
+    } finally {
+      setIsLoading(false);
     }
-  } catch (err) {
-    console.error("שגיאה בשליחה לשרת:", err);
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
   const handleGoogleLogin = () => {
+    debugger
     window.location.href = `${baseUrl}/auth/google`;
   };
 
   return (
-    <Layout style={{ 
+    <Layout style={{
       minHeight: '100vh',
       background: '#f0f2f5',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center'
     }}>
-      <Card style={{ 
+      <Card style={{
         width: 400,
         boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
         borderRadius: '12px'
@@ -84,9 +87,37 @@ const onSubmit = async (data) => {
 
           <div style={{ marginBottom: 24 }}>
             <Controller
+              name="email"
+              control={control}
+              rules={{
+                required: 'יש להזין מייל',
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: 'כתובת מייל לא תקינה'
+                }
+              }}
+              render={({ field }) => (
+                <Form.Item
+                  validateStatus={errors.email ? 'error' : ''}
+                  help={errors.email?.message}
+                >
+                  <Input
+                    {...field}
+                    prefix={<MailOutlined />}
+                    placeholder="מייל"
+                    size="large"
+                  />
+                </Form.Item>
+              )}
+            />
+          </div>
+
+
+          <div style={{ marginBottom: 24 }}>
+            <Controller
               name="password"
               control={control}
-              rules={{ 
+              rules={{
                 required: 'יש להזין סיסמה',
                 minLength: {
                   value: 6,
@@ -137,8 +168,10 @@ const onSubmit = async (data) => {
                   <Select
                     {...field}
                     placeholder="תפקיד"
+                    prefix={<TeamOutlined/>}
                     size="large"
                     style={{ textAlign: 'right' }}
+                    //allowClear
                   >
                     <Option value="developer">מפתח</Option>
                     <Option value="support">תומך</Option>
@@ -163,7 +196,7 @@ const onSubmit = async (data) => {
           <Button
             icon={<GoogleOutlined />}
             onClick={handleGoogleLogin}
-            style={{ 
+            style={{
               width: '100%',
               height: '40px',
               background: '#fff',
