@@ -4,6 +4,7 @@ import { Form, Input, Checkbox, Button, Layout, Card, Space, Divider } from 'ant
 import { UserOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons';
 import { useForm, Controller } from 'react-hook-form';
 import axios from 'axios';
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
 
 const Login = () => {
@@ -20,7 +21,7 @@ const Login = () => {
 const onSubmit = async (data) => {
   setIsLoading(true);
   try {
-    const response = await axios.post("http://localhost:8080/auth/login", {
+    const response = await axios.post(`${baseUrl}/auth/login`, {
       userName: data.username,
       password: data.password
     });
@@ -40,7 +41,7 @@ const onSubmit = async (data) => {
   }
 };
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:8080/auth/google";
+    window.location.href = `${baseUrl}/auth/google`;
   };
 
   return (

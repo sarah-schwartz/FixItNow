@@ -1,46 +1,135 @@
-import React, { useState } from 'react';
-import { Form } from 'antd';
+import React, { useEffect } from 'react';
+import { Form, message } from 'antd';
+import { useDispatch, useSelector } from 'react-redux';
+
 import FormHeader from './FormHeader';
 import FormSteps from './FormSteps';
 import BasicFields from './BasicFields';
 import CategoryFields from './CategoryFields';
 import DescriptionField from './DescriptionField';
 import FormActions from './FormActions';
-import { categories, CATEGORY_FIELDS } from './FormConstants';
+
+import {
+  fetchCategories,
+  submitNewRequest,
+  setFormField,
+  setCategoryFields,
+  setSelectedCategory,
+  calculateStep,
+  resetForm,
+  clearError,
+  clearSubmitSuccess
+} from '../../Store/RequestSlice';
+
+import { getFieldLabel } from '../../constants/constants';
+// import { getCurrentUserId, getDefaultAssigneeId } from '../utils/userHelper';
 
 const AddRequestForm = () => {
   const [form] = Form.useForm();
-  const [category, setCategory] = useState(null);
-  const [currentStep, setCurrentStep] = useState(0);
+  const dispatch = useDispatch();
+  
+  const {
+    categories,
+    selectedCategory,
+    formData,
+    currentStep,
+    loading,
+    error,
+    submitLoading,
+    submitSuccess
+  } = useSelector(state => state.newRequest);
 
-  const baseFields = ['title', 'category', 'priority', 'description'];
+  // Load categories on component mount
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
-  const updateStep = (values, newCategory = category) => {
-    let allFields = [...baseFields];
-    if (newCategory && CATEGORY_FIELDS[newCategory]) {
-      allFields = allFields.concat(CATEGORY_FIELDS[newCategory].map(f => f.name));
+  // Handle success/error messages
+  useEffect(() => {
+    if (submitSuccess) {
+      message.success('הבקשה נשלחה בהצלחה!');
+      form.resetFields();
+      dispatch(clearSubmitSuccess());
     }
+  }, [submitSuccess, form, dispatch]);
 
-    const filledFields = allFields.filter(field => values[field]);
-    const progress = (filledFields.length / allFields.length) * 100;
+  useEffect(() => {
+    if (error) {
+      message.error(error);
+      dispatch(clearError());
+    }
+  }, [error, dispatch]);
 
-    if (progress === 100) setCurrentStep(3);
-    else if (progress >= 75) setCurrentStep(2);
-    else if (progress >= 25) setCurrentStep(1);
-    else setCurrentStep(0);
+  // Handle form field changes
+  const handleFieldChange = (field, value) => {
+    dispatch(setFormField({ field, value }));
+    dispatch(calculateStep());
   };
 
-  const onFinish = (values) => {
-    console.log('Form values:', values);
-    form.resetFields();
-    setCategory(null);
-    setCurrentStep(0);
+  // Handle category field changes
+  const handleCategoryFieldChange = (fieldName, value) => {
+    dispatch(setCategoryFields({ [fieldName]: value }));
+    dispatch(calculateStep());
   };
 
+  // Handle category selection
+  const handleCategoryChange = (categoryName) => {
+    dispatch(setSelectedCategory(categoryName));
+    dispatch(calculateStep());
+  };
+
+  // Handle form submission
+  const handleSubmit = (values) => {
+    // Get category fields data
+    const categoryFieldsData = Object.keys(values)
+      .filter(key => !['title', 'description', 'priority', 'category'].includes(key))
+      .reduce((acc, key) => {
+        if (values[key]) {
+          const field = selectedCategory?.fields?.find(f => f.fieldName === key);
+          const fieldLabel = field ? getFieldLabel(field.labelKey) : key;
+          acc[fieldLabel] = values[key];
+        }
+        return acc;
+      }, {});
+
+    const requestData = {
+      title: values.title,
+      description: values.description,
+      priority: values.priority,
+      category: selectedCategory?.name,
+      categoryFields: categoryFieldsData,
+      createdBy: getUserId(),
+      assignedTo: getAssigneeId()
+    };
+
+    dispatch(submitNewRequest(requestData));
+  };
+
+  // Helper functions for getting user IDs
+  // const getUserId = () => getCurrentUserId();
+  // const getAssigneeId = () => getDefaultAssigneeId();
+    const getUserId = () => "שרי";
+  const getAssigneeId = () =>"1234";
+
+
+  // Handle form reset
   const handleReset = () => {
     form.resetFields();
-    setCategory(null);
-    setCurrentStep(0);
+    dispatch(resetForm());
+  };
+
+  // Handle form values change
+  const handleValuesChange = (changedValues, allValues) => {
+    Object.keys(changedValues).forEach(key => {
+      if (key === 'category') {
+        handleCategoryChange(changedValues[key]);
+      } else if (['title', 'priority', 'description'].includes(key)) {
+        handleFieldChange(key, changedValues[key]);
+      } else {
+        // Category-specific field
+        handleCategoryFieldChange(key, changedValues[key]);
+      }
+    });
   };
 
   return (
@@ -58,30 +147,32 @@ const AddRequestForm = () => {
       <Form
         layout="vertical"
         form={form}
-        onFinish={onFinish}
-        onValuesChange={(changed, allValues) => {
-          if (changed.category) {
-            setCategory(changed.category);
-            updateStep(allValues, changed.category);
-          } else {
-            updateStep(allValues);
-          }
-        }}
+        onFinish={handleSubmit}
+        onValuesChange={handleValuesChange}
         requiredMark={false}
+        initialValues={formData}
       >
         <FormHeader title="הגשת בקשה חדשה" />
+        
         <FormSteps currentStep={currentStep} />
-        <BasicFields categories={categories} />
+        
+        <BasicFields 
+          categories={categories}
+          loading={loading}
+        />
 
-        {category && (
+        {selectedCategory && selectedCategory.fields.length > 0 && (
           <CategoryFields
-            fields={CATEGORY_FIELDS[category]}
-            onChangeProgress={() => updateStep(form.getFieldsValue(), category)}
+            category={selectedCategory}
           />
         )}
 
         <DescriptionField />
-        <FormActions onReset={handleReset} />
+        
+        <FormActions 
+          onReset={handleReset}
+          loading={submitLoading}
+        />
       </Form>
     </div>
   );

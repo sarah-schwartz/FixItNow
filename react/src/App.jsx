@@ -1,6 +1,5 @@
 import Login from './Components/Login'
 import './App.css'
-import Header from './Components/Header'
 import React, { Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import './theme/globalStyles.css';
@@ -12,11 +11,12 @@ const LazyMyRequests = React.lazy(() => import("./Components/MyRequests"))
 const LazyPage404 = React.lazy(() => import("./Components/NotFound"))
 const LazyRequestDetailes = React.lazy(() => import("./Components/RequestDetailes"))
 const LazyAddRequest = React.lazy(() => import("./Components/AddRequestForm/AddRequestForm"))
+const Header = React.lazy(() => import('./Components/Header'));
+
 function App() {
   return (
     <>
       <Header />
-
       <Routes>
         <Route path='/' element={<Login />} />
         <Route path='/Login' element={<Suspense fallback={'loading...'}><LazyLogin /></Suspense>} />
