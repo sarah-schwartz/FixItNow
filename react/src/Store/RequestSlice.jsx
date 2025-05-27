@@ -6,67 +6,72 @@ import { useSelector } from 'react-redux';
 
 // Async func for fetching categories from MongoDB
 export const fetchCategories = createAsyncThunk(
-    'newRequest/fetchCategories',
-    async (_, { rejectWithValue }) => {
-      try {
-        const response = await axios.get(`${baseUrl}/categories`);
-        return response.data;
-      } catch (error) {
-        return rejectWithValue(error.response?.data?.message || 'שגיאה בטעינת קטגוריות');
-      }
+  'newRequest/fetchCategories',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${baseUrl}/categories`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'שגיאה בטעינת קטגוריות');
     }
+  }
 );
 
 // Async func for submitting new request
 export const submitNewRequest = createAsyncThunk(
-    'newRequest/submitNewRequest',
-    async (requestData, { rejectWithValue }) => {
+  'newRequest/submitNewRequest',
+  async (requestData, { rejectWithValue }) => {
+    try {
+      const {
+        token,
+        title,
+        category,
+        priority,
+        description,
+        createdBy,
+        assignedTo,
+        categoryFields
+      } = requestData;
+
+      console.log("Submitting request:", requestData);
+
+      // Fetch category
+      const categoriesResponse = await axios.get(`${baseUrl}/Categories`);
+      const categories = categoriesResponse.data;
+      const selectedCategory = categories.find(cat => cat.name === category);
+
+      if (!selectedCategory) throw new Error('קטגוריה לא נמצאה');
+
+      let ticketTypeResponse;
       try {
-        const token = useSelector(state => state.UserSlice.token);
-        // First, find the category to get its _id
-        const categoriesResponse = await axios.get(`${baseUrl}/Categories`);
-        const categories = categoriesResponse.data;
-        const selectedCategory = categories.find(cat => cat.name === requestData.category);
-
-        if (!selectedCategory) {
-          throw new Error('קטגוריה לא נמצאה');
-        }
-
-        // Create ticket type first (if needed) or use existing one
-        let ticketTypeResponse;
-        try {
-          ticketTypeResponse = await axios.post(
-              `${baseUrl}/TicketType/addTicketType`,
-              {
-                name: requestData.category,
-                category: selectedCategory._id
-              },
-              {
-                headers: {
-                  Authorization: token
-                }
-              }
-          );
-        }        catch  {
-          // If ticket type already exists, that's okay
-          console.log('Ticket type might already exist');
-        }
-
-        // Prepare the ticket data according to Ticket model
-        const ticketData = {
-          description: `${requestData.title}\n\n${requestData.description}\n\nפרטים נוספים:\n${JSON.stringify(requestData.categoryFields, null, 2)}`,
-          priority: requestData.priority,
-          type: ticketTypeResponse?.data?._id || selectedCategory._id, // Use ticket type ID or category ID
-          createdBy: requestData.createdBy,
-          assignedTo: requestData.assignedTo || requestData.createdBy // Assign to self if no assignee
-        };
-
-        const response = await axios.post(`${baseUrl}/Ticket`, ticketData);
-        return response.data;
-      } catch (error) {
-        return rejectWithValue(error.response?.data?.message || error.message || 'שגיאה בשליחת הבקשה');
+        ticketTypeResponse = await axios.post(
+          `${baseUrl}/TicketType/addTicketType`,
+          { name: category, category: selectedCategory._id },
+          { headers: { Authorization: token } }
+        );
+      } catch {
+        console.log('Ticket type might already exist');
       }
+
+      const ticketData = {
+        description: `${title}\n\n${description}\n\nפרטים נוספים:\n${JSON.stringify(categoryFields, null, 2)}`,
+        priority,
+        type: ticketTypeResponse?.data?._id || selectedCategory._id,
+        createdBy,
+        assignedTo: assignedTo || createdBy
+      };
+
+      const response = await axios.post(`${baseUrl}/Ticket`, ticketData, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message || 'שגיאה בשליחת הבקשה');
     }
+  }
 );
 const initialState = {
   categories: [],
@@ -148,37 +153,37 @@ const RequestSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-        // Fetch categories cases
-        .addCase(fetchCategories.pending, (state) => {
-          state.loading = true;
-          state.error = null;
-        })
-        .addCase(fetchCategories.fulfilled, (state, action) => {
-          state.loading = false;
-          state.categories = action.payload;
-        })
-        .addCase(fetchCategories.rejected, (state, action) => {
-          state.loading = false;
-          state.error = action.payload;
-        })
-        // Submit request cases
-        .addCase(submitNewRequest.pending, (state) => {
-          state.submitLoading = true;
-          state.error = null;
-          state.submitSuccess = false;
-        })
-        .addCase(submitNewRequest.fulfilled, (state) => {
-          state.submitLoading = false;
-          state.submitSuccess = true;
-          // Reset form after successful submission
-          state.formData = initialState.formData;
-          state.selectedCategory = null;
-          state.currentStep = 0;
-        })
-        .addCase(submitNewRequest.rejected, (state, action) => {
-          state.submitLoading = false;
-          state.error = action.payload;
-        });
+      // Fetch categories cases
+      .addCase(fetchCategories.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCategories.fulfilled, (state, action) => {
+        state.loading = false;
+        state.categories = action.payload;
+      })
+      .addCase(fetchCategories.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Submit request cases
+      .addCase(submitNewRequest.pending, (state) => {
+        state.submitLoading = true;
+        state.error = null;
+        state.submitSuccess = false;
+      })
+      .addCase(submitNewRequest.fulfilled, (state) => {
+        state.submitLoading = false;
+        state.submitSuccess = true;
+        // Reset form after successful submission
+        state.formData = initialState.formData;
+        state.selectedCategory = null;
+        state.currentStep = 0;
+      })
+      .addCase(submitNewRequest.rejected, (state, action) => {
+        state.submitLoading = false;
+        state.error = action.payload;
+      });
   }
 });
 

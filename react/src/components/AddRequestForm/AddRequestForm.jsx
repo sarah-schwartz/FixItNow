@@ -28,7 +28,6 @@ import UserSlice from "../../Store/UserSlice.jsx";
 const AddRequestForm = () => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
-  const token = useSelector(state => state.UserSlice.token);
 
   const {
     categories,
@@ -40,6 +39,8 @@ const AddRequestForm = () => {
     submitLoading,
     submitSuccess
   } = useSelector(state => state.newRequest);
+  const token = useSelector((state) => state.UserSlice.token);
+console.log("Token:", token);
 
   // Load categories on component mount
   useEffect(() => {
@@ -100,11 +101,11 @@ const AddRequestForm = () => {
       priority: values.priority,
       category: selectedCategory?.name,
       categoryFields: categoryFieldsData,
-      createdBy: token,
-      assignedTo: token
+      createdBy: "67eda8fc2b6e420787c7c907",
+      assignedTo: "67eda8fc2b6e420787c7c907"
     };
 
-    dispatch(submitNewRequest(requestData));
+dispatch(submitNewRequest({ ...requestData, token }));
   };
 
   // Helper functions for getting user IDs
