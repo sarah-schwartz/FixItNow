@@ -24,33 +24,18 @@ const Login = () => {
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
-      const response = await axios.post(`${baseUrl}/auth/login`, {
-        userName: data.username,
-        password: data.password
-      });
+      const response = await axios.post(
+  `${baseUrl}/auth/login`,
+  {
+    userName: data.username,
+    password: data.password,
+  },
+  {
+    withCredentials: true, // ← זה מה ששומר את הקוקי
+  }
+);
       console.log("response.data", response.data);
-      debugger
-      const result = response.data;
-      dispatch(updateUser({
-        name: result.user.userName,
-        role: result.user.role,
-        token: result.token
-      }));
-      const token = useSelector(state => state.UserSlice.token);
-      debugger
-      console.log(token)
-      localStorage.setItem("token", result.token);
       navigate("/HomePage");
-
-      // if (response.status === 200 && result) {
-      //   localStorage.setItem("token", result.token);
-      //   debugger
-      //   const {user} = await axios.get("http://localhost:8080/User/getUserbyName/"+data.username);
-      // dispatch(updateUser({name:data.username,role:user.data.role,token:user.data.token}));
-      //   navigate("/HomePage");
-      // } else {
-      //   throw new Error('שם משתמש או סיסמה שגויים');
-      // }
     } catch (err) {
       console.error("שגיאה בשליחה לשרת:", err);
     } finally {

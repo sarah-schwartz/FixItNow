@@ -3,6 +3,8 @@ const passport = require("passport");
 const router = express.Router();
 const authController = require("../controllers/authController");
 const jwt = require('jsonwebtoken');
+const { authenticateJWT } = require("../middleware/auth");
+const User = require("../models/User");
 
 // התחברות רגילה
 router.post("/login", authController.login);
@@ -15,53 +17,64 @@ router.get("/google", passport.authenticate("google", { scope: ["profile", "emai
 router.get("/google/callback",
     passport.authenticate("google", {
         failureRedirect: "/login",
-        session: true,
+        session: false,
     }),
-    (req, res) => {
-        console.log("jjj")
-        debugger
-        //const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET);
-        const token = jwt.sign({
-    id: req.user._id,
-    name: req.user.name,
-    email: req.user.email,
-    picture: req.user.picture, // 🔹 מוסיפה את תמונת הפרופיל
-}, process.env.JWT_SECRET);
+    async (req, res) => {
+        console.log("Google callback reached");
 
-        if(!token)
-            console.log("error")
-        console.log(token)
-        // ברירת מחדל: מפנה ללקוח אחרי התחברות
-        res.redirect(`http://localhost:5173/HomePage?token=${token}`);
+        try {
+            const user = await User.findById(req.user._id);
+
+            const token = jwt.sign({
+                id: user._id,
+                userName: user.userName,
+                email: user.email,
+                role: user.role,
+                picture: user.picture,
+            }, process.env.JWT_SECRET, { expiresIn: "1d" });
+
+            res.cookie("token", token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: "lax",
+                maxAge: 24 * 60 * 60 * 1000,
+                path: '/'
+            });
+
+            res.redirect("http://localhost:5173/HomePage");
+        } catch (err) {
+            console.error("Google auth error:", err);
+            res.redirect("http://localhost:5173/login?error=auth_failed");
+        }
     }
 );
 
-// router.get('/google/callback',
-//   passport.authenticate('google', { session: false, failureRedirect: '/login' }),
-//   (req, res) => {
-//     // שליחה של הטוקן לריאקט
-//     const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET);
-    
-//     // או שליחה ל־React ע"י הפנייה עם הטוקן בפרמטר
-//     res.redirect(`http://localhost:5173/HomePage?token=${token}`);
-//   }
-// );
-
 // בדיקה אם מחובר
-router.get("/user", (req, res) => {
-    res.send(req.user || null);
+router.get("/user", authenticateJWT, (req, res) => {
+    res.send(req.user);
 });
 
 // יציאה מהחשבון
 router.get("/logout", (req, res) => {
-    req.logout(() => {
-        res.redirect("/");
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: "lax",
+        path: '/'
+    });
+
+    req.logout();
+    res.json({ message: "Logged out successfully" });
+});
+
+// קבלת פרטי המשתמש מהטוקן
+router.get("/me", authenticateJWT, (req, res) => {
+    res.json({
+        id: req.user.id,
+        userName: req.user.userName,
+        email: req.user.email,
+        role: req.user.role,
     });
 });
 
 module.exports = router;
-
-
-
-
-
