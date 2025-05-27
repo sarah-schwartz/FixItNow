@@ -18,10 +18,12 @@ passport.use(new GoogleStrategy({
         const email = profile.emails && profile.emails.length > 0 ? profile.emails[0].value : undefined;
 
         user = await User.create({
+          
           userName: profile.displayName,
           email: email,
           googleId: profile.id,
           role: "developer",
+          picture: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : undefined
         });
       }
 

@@ -19,7 +19,15 @@ router.get("/google/callback",
     }),
     (req, res) => {
         console.log("jjj")
-        const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET);
+        debugger
+        //const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET);
+        const token = jwt.sign({
+    id: req.user._id,
+    name: req.user.name,
+    email: req.user.email,
+    picture: req.user.picture, // 🔹 מוסיפה את תמונת הפרופיל
+}, process.env.JWT_SECRET);
+
         if(!token)
             console.log("error")
         console.log(token)
