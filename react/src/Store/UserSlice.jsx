@@ -25,12 +25,14 @@ const UserSlice = createSlice({
         updateName: (state, action) => {
             state.name = action.payload; // קבלת שם מהפעולה
         },
-         getUser:(state,action)=>{
-            return state.name;
-        },
         updateRole: (state, action) => {
             state.role = action.payload; // קבלת אימייל מהפעולה
         },
+        getToken: (state, action) => {
+           return state.token;
+        },
+
+
         createUser: (state) => {
             state.name = ""; // איפוס השם
             state.role = ""; // איפוס האימייל

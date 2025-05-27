@@ -13,7 +13,7 @@ const userRouter = require("./routers/userRouter");
 const authRouter = require("./routers/authRouter");
 const sendEmail = require("./routers/emailRouter");
 const categoryRouter = require('./routers/categoryRouter');
-
+const ticketRouter = require('./routers/ticketRouter');
 dotenv.config();
 const app = express();
 
@@ -43,6 +43,7 @@ app.use("/User", userRouter);
 app.use("/auth", authRouter);
 app.use("/Email", sendEmail);
 app.use('/Categories', categoryRouter);
+app.use("/Ticket",ticketRouter)
 
 app.get("/", (req, res) => res.send("Server is running"));
 

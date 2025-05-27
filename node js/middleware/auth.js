@@ -18,14 +18,23 @@ function createToken(req, res, next) {
 }
 
 function verifyToken(req, res, next) {
-    try {
-        const token = req.headers["authorization"];
-        if (!token) return res.status(401).json({ message: "Unauthorized - No token provided" });
-        const user = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = user;
-        next();
-    } catch (error) {
-        res.status(403).json({ message: "Invalid token", error });
+  try {
+    console.log("Authorization Header:", req.headers["authorization"]);
+    const authHeader = req.headers["authorization"];
+    if (!authHeader) {
+      return res.status(401).json({ message: "Unauthorized - No token provided" });
     }
+
+    const token = authHeader.split(" ")[1]; 
+    if (!token) {
+      return res.status(401).json({ message: "Unauthorized - Token malformed" });
+    }
+
+    const user = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = user;
+    next();
+  } catch (error) {
+    res.status(403).json({ message: "Invalid token", error: error.message });
+  }
 }
 module.exports = { createToken, verifyToken }

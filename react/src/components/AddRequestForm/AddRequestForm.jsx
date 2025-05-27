@@ -22,12 +22,13 @@ import {
 } from '../../Store/RequestSlice';
 
 import { getFieldLabel } from '../../constants/constants';
+import UserSlice from "../../Store/UserSlice.jsx";
 // import { getCurrentUserId, getDefaultAssigneeId } from '../utils/userHelper';
 
 const AddRequestForm = () => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
-  
+
   const {
     categories,
     selectedCategory,
@@ -38,6 +39,8 @@ const AddRequestForm = () => {
     submitLoading,
     submitSuccess
   } = useSelector(state => state.newRequest);
+  const token = useSelector((state) => state.UserSlice.token);
+console.log("Token:", token);
 
   // Load categories on component mount
   useEffect(() => {
@@ -82,15 +85,15 @@ const AddRequestForm = () => {
   const handleSubmit = (values) => {
     // Get category fields data
     const categoryFieldsData = Object.keys(values)
-      .filter(key => !['title', 'description', 'priority', 'category'].includes(key))
-      .reduce((acc, key) => {
-        if (values[key]) {
-          const field = selectedCategory?.fields?.find(f => f.fieldName === key);
-          const fieldLabel = field ? getFieldLabel(field.labelKey) : key;
-          acc[fieldLabel] = values[key];
-        }
-        return acc;
-      }, {});
+        .filter(key => !['title', 'description', 'priority', 'category'].includes(key))
+        .reduce((acc, key) => {
+          if (values[key]) {
+            const field = selectedCategory?.fields?.find(f => f.fieldName === key);
+            const fieldLabel = field ? getFieldLabel(field.labelKey) : key;
+            acc[fieldLabel] = values[key];
+          }
+          return acc;
+        }, {});
 
     const requestData = {
       title: values.title,
@@ -98,18 +101,17 @@ const AddRequestForm = () => {
       priority: values.priority,
       category: selectedCategory?.name,
       categoryFields: categoryFieldsData,
-      createdBy: getUserId(),
-      assignedTo: getAssigneeId()
+      createdBy: "67eda8fc2b6e420787c7c907",
+      assignedTo: "67eda8fc2b6e420787c7c907"
     };
 
-    dispatch(submitNewRequest(requestData));
+dispatch(submitNewRequest({ ...requestData, token }));
   };
 
   // Helper functions for getting user IDs
   // const getUserId = () => getCurrentUserId();
   // const getAssigneeId = () => getDefaultAssigneeId();
-    const getUserId = () => "שרי";
-  const getAssigneeId = () =>"1234";
+  // const getUserId = () => "67eda8fc2b6e420787c7c907";
 
 
   // Handle form reset
@@ -133,48 +135,48 @@ const AddRequestForm = () => {
   };
 
   return (
-    <div
-      style={{
-        width: '100%',
-        maxWidth: '900px',
-        margin: '0 auto',
-        padding: '2rem',
-        background: '#fff',
-        borderRadius: '12px',
-        boxShadow: '0 0 10px rgba(0,0,0,0.05)',
-      }}
-    >
-      <Form
-        layout="vertical"
-        form={form}
-        onFinish={handleSubmit}
-        onValuesChange={handleValuesChange}
-        requiredMark={false}
-        initialValues={formData}
+      <div
+          style={{
+            width: '100%',
+            maxWidth: '900px',
+            margin: '0 auto',
+            padding: '2rem',
+            background: '#fff',
+            borderRadius: '12px',
+            boxShadow: '0 0 10px rgba(0,0,0,0.05)',
+          }}
       >
-        <FormHeader title="הגשת בקשה חדשה" />
-        
-        <FormSteps currentStep={currentStep} />
-        
-        <BasicFields 
-          categories={categories}
-          loading={loading}
-        />
+        <Form
+            layout="vertical"
+            form={form}
+            onFinish={handleSubmit}
+            onValuesChange={handleValuesChange}
+            requiredMark={false}
+            initialValues={formData}
+        >
+          <FormHeader title="הגשת בקשה חדשה" />
 
-        {selectedCategory && selectedCategory.fields.length > 0 && (
-          <CategoryFields
-            category={selectedCategory}
+          <FormSteps currentStep={currentStep} />
+
+          <BasicFields
+              categories={categories}
+              loading={loading}
           />
-        )}
 
-        <DescriptionField />
-        
-        <FormActions 
-          onReset={handleReset}
-          loading={submitLoading}
-        />
-      </Form>
-    </div>
+          {selectedCategory && selectedCategory.fields.length > 0 && (
+              <CategoryFields
+                  category={selectedCategory}
+              />
+          )}
+
+          <DescriptionField />
+
+          <FormActions
+              onReset={handleReset}
+              loading={submitLoading}
+          />
+        </Form>
+      </div>
   );
 };
 

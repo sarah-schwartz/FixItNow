@@ -2,6 +2,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
+import { useSelector } from 'react-redux';
 
 // Async func for fetching categories from MongoDB
 export const fetchCategories = createAsyncThunk(
@@ -21,37 +22,51 @@ export const submitNewRequest = createAsyncThunk(
   'newRequest/submitNewRequest',
   async (requestData, { rejectWithValue }) => {
     try {
-      // First, find the category to get its _id
+      const {
+        token,
+        title,
+        category,
+        priority,
+        description,
+        createdBy,
+        assignedTo,
+        categoryFields
+      } = requestData;
+
+      console.log("Submitting request:", requestData);
+
+      // Fetch category
       const categoriesResponse = await axios.get(`${baseUrl}/Categories`);
       const categories = categoriesResponse.data;
-      const selectedCategory = categories.find(cat => cat.name === requestData.category);
-      
-      if (!selectedCategory) {
-        throw new Error('קטגוריה לא נמצאה');
-      }
+      const selectedCategory = categories.find(cat => cat.name === category);
 
-      // Create ticket type first (if needed) or use existing one
+      if (!selectedCategory) throw new Error('קטגוריה לא נמצאה');
+
       let ticketTypeResponse;
       try {
-        ticketTypeResponse = await axios.post(`${baseUrl}/TicketType/addTicketType`, {
-          name: requestData.category,
-          category: selectedCategory._id
-        });
-      } catch (error) {
-        // If ticket type already exists, that's okay
+        ticketTypeResponse = await axios.post(
+          `${baseUrl}/TicketType/addTicketType`,
+          { name: category, category: selectedCategory._id },
+          { headers: { Authorization: token } }
+        );
+      } catch {
         console.log('Ticket type might already exist');
       }
 
-      // Prepare the ticket data according to Ticket model
       const ticketData = {
-        description: `${requestData.title}\n\n${requestData.description}\n\nפרטים נוספים:\n${JSON.stringify(requestData.categoryFields, null, 2)}`,
-        priority: requestData.priority,
-        type: ticketTypeResponse?.data?._id || selectedCategory._id, // Use ticket type ID or category ID
-        createdBy: requestData.createdBy,
-        assignedTo: requestData.assignedTo || requestData.createdBy // Assign to self if no assignee
+        description: `${title}\n\n${description}\n\nפרטים נוספים:\n${JSON.stringify(categoryFields, null, 2)}`,
+        priority,
+        type: ticketTypeResponse?.data?._id || selectedCategory._id,
+        createdBy,
+        assignedTo: assignedTo || createdBy
       };
 
-      const response = await axios.post(`${baseUrl}/Ticket`, ticketData);
+      const response = await axios.post(`${baseUrl}/Ticket`, ticketData, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message || 'שגיאה בשליחת הבקשה');
@@ -103,21 +118,21 @@ const RequestSlice = createSlice({
       const baseFields = ['title', 'category', 'priority', 'description'];
       const categoryFieldNames = state.selectedCategory?.fields?.map(f => f.fieldName) || [];
       const allRequiredFields = [...baseFields, ...categoryFieldNames];
-      
+
       let filledFields = 0;
-      
+
       // Check base fields
       baseFields.forEach(field => {
         if (state.formData[field]) filledFields++;
       });
-      
+
       // Check category fields
       categoryFieldNames.forEach(fieldName => {
         if (state.formData.categoryFields[fieldName]) filledFields++;
       });
-      
+
       const progress = (filledFields / allRequiredFields.length) * 100;
-      
+
       if (progress === 100) state.currentStep = 2;
       else if (progress >= 50) state.currentStep = 1;
       else state.currentStep = 0;

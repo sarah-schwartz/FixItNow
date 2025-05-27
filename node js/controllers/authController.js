@@ -38,7 +38,6 @@ const register = async (req,res)=>{
         return res.status(400).json({message:'Invalid user received'})
     }
 }
-
 const login = async (req, res) => {
     const { userName, password } = req.body;
 
@@ -56,6 +55,7 @@ const login = async (req, res) => {
     if (!match) {
         return res.status(401).json({ message: 'Unauthorized: Incorrect password' });
     }
+
     const token = jwt.sign(
         {
             userName: foundUser.userName,
@@ -67,10 +67,10 @@ const login = async (req, res) => {
         { expiresIn: "1d" }
     );
 
-    // החזרת המשתמש + טוקן (או רק טוקן לפי הצורך)
-    res.status(200).json(token);
-
-    //res.status(200).send(foundUser);
+    res.status(200).json({
+        user: foundUser,
+        token: token
+    });
 };
 
 module.exports = {login, register}
