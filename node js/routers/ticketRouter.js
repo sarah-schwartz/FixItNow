@@ -8,14 +8,14 @@ const {
     getAllOpenTickets
 } = require('../controllers/ticketController');
 
-// const authenticate = require('../middleware/auth');
+const {verifyToken} = require('../middleware/auth');
 
-router.post('/', authenticate, addTicket);
+router.post('/', verifyToken, addTicket);
 
-router.get('/my-tickets', authenticate, getAllTicketsByUserID);
+router.get('/my-tickets', verifyToken, getAllTicketsByUserID);
 
-router.get('/:id', authenticate, getTicketByID);
+router.get('/:id', verifyToken, getTicketByID);
 
-router.get('/', authenticate, getAllOpenTickets);
+router.get('/', verifyToken, getAllOpenTickets);
 
 module.exports = router;

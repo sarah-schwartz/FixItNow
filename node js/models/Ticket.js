@@ -12,5 +12,5 @@ const TicketSchema =new mongoose.Schema({
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     responses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Response' }]
 }, { timestamps: true });
-
+delete mongoose.connection.models['Ticket'];
 module.exports = mongoose.models.Ticket || mongoose.model("Ticket", TicketSchema);

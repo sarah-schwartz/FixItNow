@@ -1,6 +1,8 @@
 const Ticket = require('../models/Ticket'); 
 async function addTicket(req, res) {
     try {
+          console.log("POST /api/requests called");
+
         console.log("New request:", req.body);
 
         const { description, status = 'open', createdBy, assignedTo, responses = [] } = req.body;
@@ -14,6 +16,7 @@ async function addTicket(req, res) {
 
         res.status(201).json(ticket);
     } catch (error) {
+          console.error("Error saving request:", error); 
         res.status(500).json({ message: error.message });
     }
 }
