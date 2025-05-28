@@ -14,7 +14,7 @@ console.log("addTicket:", addTicket ); // ← אמור להדפיס פונקצי
 
 router.post('/', verifyToken, addTicket);
 
-router.get('/my-tickets', verifyToken, getAllTicketsByUserID);
+router.get('/my-tickets/:id', getAllTicketsByUserID);
 
 router.get('/:id', verifyToken, getTicketByID);
 

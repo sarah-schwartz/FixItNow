@@ -1,5 +1,4 @@
 
-
 import { Row, Col, Layout, Spin, Typography } from 'antd';
 import React, { lazy, Suspense, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';

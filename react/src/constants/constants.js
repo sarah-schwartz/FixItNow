@@ -38,6 +38,16 @@ export const PRIORITY_LABELS_HE = {
   high: 'גבוהה'
 };
 
+export const STATUS_LABELS_HE = {
+  waiting: 'ממתין',
+  inProgress: 'בטיפול',
+  closed: 'הושלם',
+};
+
+export const getStatusLabel = (status) => {
+  return STATUS_LABELS_HE[status] || status;
+};
+
 // Helper function to get Hebrew label for priority
 export const getPriorityLabel = (priorityValue) => {
   return PRIORITY_LABELS_HE[priorityValue] || priorityValue;
