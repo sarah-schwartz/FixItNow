@@ -8,11 +8,9 @@ const AssignedToField = () => {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    debugger
-    axiosInstance.get('/users/getAllUsers')
+    axiosInstance.get('/api/user/getAllUsers')
       .then(res => {
         const data = res.data;
-        // נוודא שזה מערך
         if (Array.isArray(data)) {
           setUsers(data);
         } else if (Array.isArray(data.users)) {
@@ -32,7 +30,7 @@ const AssignedToField = () => {
     <Form.Item
       label="למי להקצות את הפנייה"
       name="assignedTo"
-      rules={[{ message: 'יש לבחור משתמש' }]}
+      rules={[{ required: true, message: 'יש לבחור משתמש' }]}
     >
       <Select placeholder="בחר משתמש">
         {users.map(user => (
