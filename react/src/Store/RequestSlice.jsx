@@ -17,62 +17,90 @@ export const fetchCategories = createAsyncThunk(
   }
 );
 
-// Async func for submitting new request
+// // Async func for submitting new request
+// export const submitNewRequest = createAsyncThunk(
+//   'newRequest/submitNewRequest',
+//   async (requestData, { rejectWithValue }) => {
+//     try {
+//       const {
+//         token,
+//         title,
+//         category,
+//         priority,
+//         description,
+//         createdBy,
+//         assignedTo,
+//         categoryFields
+//       } = requestData;
+
+//       const categoriesResponse = await axios.get(`${baseUrl}/Categories`);
+//       const categories = categoriesResponse.data;
+//       const selectedCategory = categories.find(cat => cat.name === category);
+
+//       if (!selectedCategory) throw new Error('קטגוריה לא נמצאה');
+
+//       let ticketTypeResponse;
+//       try {
+//         ticketTypeResponse = await axios.post(
+//           `${baseUrl}/TicketType/addTicketType`,
+//           { name: category, category: selectedCategory._id },
+//           { headers: { Authorization: token } }
+//         );
+//       } catch {
+//         console.log('Ticket type might already exist');
+//       }
+
+//       const ticketData = {
+//         description: `${title}\n\n${description}\n\nפרטים נוספים:\n${JSON.stringify(categoryFields, null, 2)}`,
+//         priority,
+//         type: ticketTypeResponse?.data?._id || selectedCategory._id,
+//         createdBy,
+//         assignedTo: assignedTo || createdBy
+//       };
+
+//       const response = await axios.post(`${baseUrl}/Ticket`, ticketData, {
+//         headers: {
+//           Authorization: `Bearer ${token}`
+//         }
+//       });
+
+//       return response.data;
+//     } catch (error) {
+//       return rejectWithValue(error.response?.data?.message || error.message || 'שגיאה בשליחת הבקשה');
+//     }
+//   }
+// );
 export const submitNewRequest = createAsyncThunk(
-  'newRequest/submitNewRequest',
-  async (requestData, { rejectWithValue }) => {
+  "requests/submitNewRequest",
+  async ({ title, description, priority, type, createdBy, assignedTo, fieldValues, token }) => {
     try {
-      const {
-        token,
+      const ticketData = {
         title,
-        category,
-        priority,
         description,
+        priority,
+        type,
         createdBy,
         assignedTo,
-        categoryFields
-      } = requestData;
-
-      console.log("Submitting request:", requestData);
-
-      // Fetch category
-      const categoriesResponse = await axios.get(`${baseUrl}/Categories`);
-      const categories = categoriesResponse.data;
-      const selectedCategory = categories.find(cat => cat.name === category);
-
-      if (!selectedCategory) throw new Error('קטגוריה לא נמצאה');
-
-      let ticketTypeResponse;
-      try {
-        ticketTypeResponse = await axios.post(
-          `${baseUrl}/TicketType/addTicketType`,
-          { name: category, category: selectedCategory._id },
-          { headers: { Authorization: token } }
-        );
-      } catch {
-        console.log('Ticket type might already exist');
-      }
-
-      const ticketData = {
-        description: `${title}\n\n${description}\n\nפרטים נוספים:\n${JSON.stringify(categoryFields, null, 2)}`,
-        priority,
-        type: ticketTypeResponse?.data?._id || selectedCategory._id,
-        createdBy,
-        assignedTo: assignedTo || createdBy
+        fieldValues,
       };
 
-      const response = await axios.post(`${baseUrl}/Ticket`, ticketData, {
-        headers: {
-          Authorization: `Bearer ${token}`
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/requests`,
+        ticketData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
 
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || error.message || 'שגיאה בשליחת הבקשה');
+      throw error.response?.data || error.message;
     }
   }
 );
+
 const initialState = {
   categories: [],
   selectedCategory: null,
@@ -108,8 +136,13 @@ const RequestSlice = createSlice({
       const categoryName = action.payload;
       state.selectedCategory = state.categories.find(cat => cat.name === categoryName) || null;
       state.formData.category = categoryName;
-      // Clear previous category fields when changing category
       state.formData.categoryFields = {};
+    },
+    setCategoryFields: (state, action) => {
+      state.formData = {
+        ...state.formData,
+        ...action.payload
+      };
     },
     setCurrentStep: (state, action) => {
       state.currentStep = action.payload;

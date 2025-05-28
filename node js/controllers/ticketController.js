@@ -1,22 +1,40 @@
 const Ticket = require('../models/Ticket'); 
 async function addTicket(req, res) {
     try {
-          console.log("POST /api/requests called");
-
         console.log("New request:", req.body);
+        const {
+            title,
+            description,
+            status = 'waiting',
+            createdBy,
+            type,
+            assignedTo,
+            priority,
+            fieldValues
+        } = req.body;
 
-        const { description, status = 'open', createdBy, assignedTo, responses = [] } = req.body;
-
-        if (  !description || !createdBy) {
-            return res.status(400).json({ message: 'Missing required fields: title, description, or createdBy' });
+        if (!title || !createdBy || !type || !assignedTo ||  !priority) {
+            return res.status(400).json({
+                message: 'Missing required fields: title, createdBy, type, assignedTo, category or priority'
+            });
         }
 
-        const ticket = new Ticket({  status, description, createdBy, assignedTo, responses });
+        const ticket = new Ticket({
+            title,
+            description,
+            status,
+            createdBy,
+            type,
+            assignedTo,
+            priority,
+            fieldValues
+        });
+
         await ticket.save();
 
         res.status(201).json(ticket);
     } catch (error) {
-          console.error("Error saving request:", error); 
+        console.error("Error saving request:", error);
         res.status(500).json({ message: error.message });
     }
 }

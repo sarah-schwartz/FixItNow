@@ -167,7 +167,6 @@ const HomePage = () => {
           </Row>
         </div>
 
-        {/* Bottom line */}
         <div
           style={{
             marginTop: '80px',
@@ -179,7 +178,6 @@ const HomePage = () => {
         />
       </Content>
 
-      {/* Optional Suspense (לא חובה כאן, אבל נשאר אם תוסיפי רכיב עתידי) */}
       <Suspense fallback={
         <div style={{
           height: '10vh',
@@ -191,10 +189,8 @@ const HomePage = () => {
           <Spin />
         </div>
       }>
-        {/* רכיבים נוספים נטענים כאן אם צריך */}
       </Suspense>
 
-      {/* אנימציות ו־CSS מדיה */}
       <style jsx>{`
         @keyframes float {
           0%, 100% {

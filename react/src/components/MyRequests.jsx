@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Table, Tag, Space, Layout, Select, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import useTransformData from '../hooks/useTransformData';
+import {
+  getPriorityLabel,
+  getCategoryLabel,
+  getStatusLabel,
+  PRIORITY_LABELS_HE,
+  STATUS_LABELS_HE
+} from '../constants/constants';
 
 const { Search } = Input;
 
@@ -17,6 +23,7 @@ const columns = [
     title: 'קטגוריה',
     dataIndex: 'category',
     key: 'category',
+    render: (catKey) => getCategoryLabel(catKey)
   },
   {
     title: 'תאריך',
@@ -24,35 +31,45 @@ const columns = [
     key: 'date',
   },
   {
-  title: 'דחיפות',
-  dataIndex: 'tags',
-  key: 'tags',
-  render: (priority) => {
-    let color;
-    if (priority === 'נמוך') color = 'geekblue';
-    else if (priority === 'רגיל') color = 'green';
-    else if (priority === 'דחוף') color = 'volcano';
-    else color = 'default';
-    return <Tag color={color}>{priority}</Tag>;
+    title: 'דחיפות',
+    dataIndex: 'tags',
+    key: 'tags',
+    render: (priority) => {
+      const translated = getPriorityLabel(priority);
+      let color;
+      if (translated === 'נמוכה') color = 'geekblue';
+      else if (translated === 'בינונית') color = 'green';
+      else if (translated === 'גבוהה') color = 'volcano';
+      else color = 'default';
+      return <Tag color={color}>{translated}</Tag>;
+    },
   },
-},
   {
     title: 'סטטוס',
     dataIndex: 'status',
     key: 'status',
     render: (status) => {
+      const translated = getStatusLabel(status);
       let color;
-      if (status === 'ממתין') color = 'orange';
-      else if (status === 'בטיפול') color = 'blue';
-      else if (status === 'הושלם') color = 'green';
+      if (translated === 'ממתין') color = 'orange';
+      else if (translated === 'בטיפול') color = 'blue';
+      else if (translated === 'הושלם') color = 'green';
       else color = 'default';
-      return <Tag color={color}>{status}</Tag>;
+      return <Tag color={color}>{translated}</Tag>;
     },
   },
 ];
 
-const urgencyOptions = ['נמוך', 'רגיל', 'דחוף'];
-const statusOptions = ['ממתין', 'בטיפול', 'הושלם'];
+// הגדרת אפשרויות סינון מתוך הקונסטנטים
+const urgencyOptions = Object.entries(PRIORITY_LABELS_HE).map(([value, label]) => ({
+  value,
+  label
+}));
+
+const statusOptions = Object.entries(STATUS_LABELS_HE).map(([value, label]) => ({
+  value,
+  label
+}));
 
 const MyRequests = () => {
   const navigate = useNavigate();
@@ -66,40 +83,30 @@ const MyRequests = () => {
   const [categorySearch, setCategorySearch] = useState('');
   const [dateSearch, setDateSearch] = useState('');
 
-  // אנחנו נשתמש ב-hook useTransformData עבור כל פנייה בנפרד
-  // אבל מכיוון ש-hook לא ניתן לקרוא בתוך לולאה, נשנה את הגישה:
-  // במקום זה, ניצור פונקציה אסינכרונית שעוברת על הפניות ומעבדת אותן.
-
   useEffect(() => {
     const fetchAndTransformTickets = async () => {
       try {
         setLoadingTickets(true);
         setErrorTickets(null);
+
         const userRes = await axios.get("http://localhost:8080/auth/me", {
           withCredentials: true,
           headers: { "Content-Type": "application/json" },
         });
-        console.log(userRes.data.id)
 
-
-        // 1. הבאת כל הפניות מהשרת
         const res = await axios.get(
           `http://localhost:8080/Ticket/my-tickets/${userRes.data.id}`,
           { headers: { 'Content-Type': 'application/json' } }
         );
-        console.log(res)
+
         const rawTickets = res.data;
 
-        // 2. פונקציה שמדמה את useTransformData (משתמשת באותה לוגיקה)
-        // מאחר ואין אפשרות לקרוא hook בתוך לולאה, נעתיק כאן לוגיקה דומה:
         async function transformTicket(t) {
-          // שליפת שם משתמש
           const userResponse = await axios.get('http://localhost:8080/auth/me', {
             withCredentials: true,
             headers: { 'Content-Type': 'application/json' },
           });
-          console.log(t.type)
-          // שליפת שם קטגוריה
+
           const categoryResponse = await axios.get(
             `http://localhost:8080/Categories/getCategoryNameById/${t.type}`,
             { headers: { 'Content-Type': 'application/json' } }
@@ -112,17 +119,16 @@ const MyRequests = () => {
 
           return {
             key: t._id,
+            _id: t._id,
             name: userResponse.data.userName,
-            category: categoryResponse.data,
+            category: categoryResponse.data, // מחזיר מפתח באנגלית
             date: formatDateOnly(t.createdAt),
-            tags: t.priority, // ניתן לשפר לפי הדחיפות אם יש שדה מתאים ב-t
+            tags: t.priority,
             status: t.status,
           };
         }
 
-        // 3. המרת כל הפניות במקביל
         const transformedTickets = await Promise.all(rawTickets.map(t => transformTicket(t)));
-        console.log(transformedTickets)
         setTickets(transformedTickets);
       } catch (err) {
         setErrorTickets(err);
@@ -134,12 +140,11 @@ const MyRequests = () => {
     fetchAndTransformTickets();
   }, []);
 
-  // סינון לפי הקלטים מהמשתמש
   const filteredData = tickets.filter((row) => {
-    const matchesUrgency = !urgencyFilter || row.tags.includes(urgencyFilter);
+    const matchesUrgency = !urgencyFilter || row.tags === urgencyFilter;
     const matchesStatus = !statusFilter || row.status === statusFilter;
     const matchesSearch = row.name.includes(searchText);
-    const matchesCategory = !categorySearch || row.category.includes(categorySearch);
+    const matchesCategory = !categorySearch || getCategoryLabel(row.category).includes(categorySearch);
     const matchesDate = !dateSearch || row.date.includes(dateSearch);
     return matchesUrgency && matchesStatus && matchesSearch && matchesCategory && matchesDate;
   });
@@ -158,7 +163,7 @@ const MyRequests = () => {
             style={{ width: 160 }}
             value={urgencyFilter || undefined}
             onChange={setUrgencyFilter}
-            options={urgencyOptions.map(urgency => ({ label: urgency, value: urgency }))}
+            options={urgencyOptions}
             allowClear
           />
           <Select
@@ -166,7 +171,7 @@ const MyRequests = () => {
             style={{ width: 160 }}
             value={statusFilter || undefined}
             onChange={setStatusFilter}
-            options={statusOptions.map(status => ({ label: status, value: status }))}
+            options={statusOptions}
             allowClear
           />
           <Input
@@ -192,10 +197,10 @@ const MyRequests = () => {
 
         <Table
           columns={columns}
-          dataSource={filteredData}
+          dataSource={filteredData.map((item, index) => ({ ...item, key: item._id || index }))}
           onRow={(record) => ({
             onClick: () => {
-              navigate(`/MyRequests/${record.key}`);
+              navigate(`/MyRequests/${record._id}`);
             },
             style: { cursor: 'pointer' },
           })}

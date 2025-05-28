@@ -1,3 +1,7 @@
+.swal2-rtl {
+  direction: rtl;
+  text-align: right;
+}
 
 .logo {
   height: 6em;

@@ -25,19 +25,33 @@ export const FIELD_LABELS_HE = {
   otherDesc: 'נושא הפנייה',
 };
 
-// Priority options
-export const PRIORITY_OPTIONS = [
-  { value: 'low', label: 'נמוכה' },
-  { value: 'medium', label: 'בינונית' },
-  { value: 'high', label: 'גבוהה' }
-];
-
 // Step configuration
 export const FORM_STEPS = [
   { title: 'התחלה' },
   { title: 'בתהליך' },
   { title: 'הושלם' }
 ];
+// Priority labels for Hebrew translation
+export const PRIORITY_LABELS_HE = {
+  low: 'נמוכה',
+  medium: 'בינונית',
+  high: 'גבוהה'
+};
+
+export const STATUS_LABELS_HE = {
+  waiting: 'ממתין',
+  inProgress: 'בטיפול',
+  closed: 'הושלם',
+};
+
+export const getStatusLabel = (status) => {
+  return STATUS_LABELS_HE[status] || status;
+};
+
+// Helper function to get Hebrew label for priority
+export const getPriorityLabel = (priorityValue) => {
+  return PRIORITY_LABELS_HE[priorityValue] || priorityValue;
+};
 
 // Helper function to get Hebrew label for category
 export const getCategoryLabel = (categoryName) => {

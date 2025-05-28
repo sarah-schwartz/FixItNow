@@ -7,7 +7,6 @@ const NavigationCard = ({ title, icon, link }) => {
   const navigate = useNavigate();
 
 
-  // Clone the icon and remove any existing styles to prevent conflicts
   const cleanIcon = React.cloneElement(icon, {
     style: {},
     className: ''
@@ -134,18 +133,6 @@ const NavigationCard = ({ title, icon, link }) => {
         >
           {title}
         </h3>
-
-        {/* Subtle description */}
-        <div
-          style={{
-            marginTop: '8px',
-            fontSize: '0.9rem',
-            color: 'rgba(26, 26, 26, 0.6)',
-            fontWeight: 400,
-          }}
-        >
-          לחץ כדי להמשיך
-        </div>
 
         {/* Hover effect indicator - bottom border */}
         <div
