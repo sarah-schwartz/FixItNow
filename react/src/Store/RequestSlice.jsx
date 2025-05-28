@@ -1,15 +1,30 @@
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-const baseUrl = import.meta.env.VITE_API_BASE_URL;
-import { useSelector } from 'react-redux';
+import axios from '../services/axiosInstance'; 
 
-// Async func for fetching categories from MongoDB
+const initialState = {
+  formData: {
+    title: '',
+    category: '',
+    priority: '',
+    description: '',
+    categoryFields: {},
+    createdBy: null,
+    assignedTo: null,
+  },
+  categories: [],
+  selectedCategory: null,
+  currentStep: 0,
+  loading: false,
+  submitLoading: false,
+  error: null,
+  submitSuccess: false,
+};
+
 export const fetchCategories = createAsyncThunk(
   'newRequest/fetchCategories',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${baseUrl}/categories`);
+      const response = await axios.get('/categories');
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'שגיאה בטעינת קטגוריות');
@@ -17,106 +32,57 @@ export const fetchCategories = createAsyncThunk(
   }
 );
 
-// // Async func for submitting new request
-// export const submitNewRequest = createAsyncThunk(
-//   'newRequest/submitNewRequest',
-//   async (requestData, { rejectWithValue }) => {
-//     try {
-//       const {
-//         token,
-//         title,
-//         category,
-//         priority,
-//         description,
-//         createdBy,
-//         assignedTo,
-//         categoryFields
-//       } = requestData;
-
-//       const categoriesResponse = await axios.get(`${baseUrl}/Categories`);
-//       const categories = categoriesResponse.data;
-//       const selectedCategory = categories.find(cat => cat.name === category);
-
-//       if (!selectedCategory) throw new Error('קטגוריה לא נמצאה');
-
-//       let ticketTypeResponse;
-//       try {
-//         ticketTypeResponse = await axios.post(
-//           `${baseUrl}/TicketType/addTicketType`,
-//           { name: category, category: selectedCategory._id },
-//           { headers: { Authorization: token } }
-//         );
-//       } catch {
-//         console.log('Ticket type might already exist');
-//       }
-
-//       const ticketData = {
-//         description: `${title}\n\n${description}\n\nפרטים נוספים:\n${JSON.stringify(categoryFields, null, 2)}`,
-//         priority,
-//         type: ticketTypeResponse?.data?._id || selectedCategory._id,
-//         createdBy,
-//         assignedTo: assignedTo || createdBy
-//       };
-
-//       const response = await axios.post(`${baseUrl}/Ticket`, ticketData, {
-//         headers: {
-//           Authorization: `Bearer ${token}`
-//         }
-//       });
-
-//       return response.data;
-//     } catch (error) {
-//       return rejectWithValue(error.response?.data?.message || error.message || 'שגיאה בשליחת הבקשה');
-//     }
-//   }
-// );
 export const submitNewRequest = createAsyncThunk(
-  "requests/submitNewRequest",
-  async ({ title, description, priority, type, createdBy, assignedTo, fieldValues, token }) => {
+  'newRequest/submitNewRequest',
+  async (requestData, { rejectWithValue }) => {
     try {
+      const {
+        title,
+        category,
+        priority,
+        description,
+        createdBy,
+        assignedTo,
+        categoryFields,
+      } = requestData;
+
+      const categoriesResponse = await axios.get('/categories');
+      const categories = categoriesResponse.data;
+      const selectedCategory = categories.find(cat => cat.name === category);
+      if (!selectedCategory) throw new Error('קטגוריה לא נמצאה');
+
+      let ticketTypeResponse;
+      try {
+        ticketTypeResponse = await axios.post('/TicketType/addTicketType', {
+          name: category,
+          category: selectedCategory._id,
+        });
+      } catch {
+        console.log('Ticket type might already exist');
+      }
+
       const ticketData = {
         title,
         description,
         priority,
-        type,
+        type: ticketTypeResponse?.data?._id || selectedCategory._id,
         createdBy,
-        assignedTo,
-        fieldValues,
+        assignedTo: assignedTo || createdBy,
+        fieldValues: Object.entries(categoryFields).map(([fieldName, value]) => ({
+          fieldName,
+          value,
+        })),
       };
 
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/requests`,
-        ticketData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      const response = await axios.post('/Ticket', ticketData);
       return response.data;
     } catch (error) {
-      throw error.response?.data || error.message;
+      return rejectWithValue(
+        error.response?.data?.message || error.message || 'שגיאה בשליחת הבקשה'
+      );
     }
   }
 );
-
-const initialState = {
-  categories: [],
-  selectedCategory: null,
-  formData: {
-    title: '',
-    category: '',
-    priority: '',
-    description: '',
-    categoryFields: {}
-  },
-  currentStep: 0,
-  loading: false,
-  error: null,
-  submitLoading: false,
-  submitSuccess: false
-};
 
 const RequestSlice = createSlice({
   name: 'newRequest',
@@ -129,20 +95,15 @@ const RequestSlice = createSlice({
     setCategoryFields: (state, action) => {
       state.formData.categoryFields = {
         ...state.formData.categoryFields,
-        ...action.payload
+        ...action.payload,
       };
     },
     setSelectedCategory: (state, action) => {
       const categoryName = action.payload;
-      state.selectedCategory = state.categories.find(cat => cat.name === categoryName) || null;
+      state.selectedCategory =
+        state.categories.find(cat => cat.name === categoryName) || null;
       state.formData.category = categoryName;
       state.formData.categoryFields = {};
-    },
-    setCategoryFields: (state, action) => {
-      state.formData = {
-        ...state.formData,
-        ...action.payload
-      };
     },
     setCurrentStep: (state, action) => {
       state.currentStep = action.payload;
@@ -153,22 +114,15 @@ const RequestSlice = createSlice({
       const allRequiredFields = [...baseFields, ...categoryFieldNames];
 
       let filledFields = 0;
-
-      // Check base fields
       baseFields.forEach(field => {
         if (state.formData[field]) filledFields++;
       });
-
-      // Check category fields
       categoryFieldNames.forEach(fieldName => {
         if (state.formData.categoryFields[fieldName]) filledFields++;
       });
 
       const progress = (filledFields / allRequiredFields.length) * 100;
-
-      if (progress === 100) state.currentStep = 2;
-      else if (progress >= 50) state.currentStep = 1;
-      else state.currentStep = 0;
+      state.currentStep = progress === 100 ? 2 : progress >= 50 ? 1 : 0;
     },
     resetForm: (state) => {
       state.formData = initialState.formData;
@@ -182,11 +136,10 @@ const RequestSlice = createSlice({
     },
     clearSubmitSuccess: (state) => {
       state.submitSuccess = false;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
-      // Fetch categories cases
       .addCase(fetchCategories.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -199,7 +152,6 @@ const RequestSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Submit request cases
       .addCase(submitNewRequest.pending, (state) => {
         state.submitLoading = true;
         state.error = null;
@@ -208,7 +160,6 @@ const RequestSlice = createSlice({
       .addCase(submitNewRequest.fulfilled, (state) => {
         state.submitLoading = false;
         state.submitSuccess = true;
-        // Reset form after successful submission
         state.formData = initialState.formData;
         state.selectedCategory = null;
         state.currentStep = 0;
@@ -217,7 +168,7 @@ const RequestSlice = createSlice({
         state.submitLoading = false;
         state.error = action.payload;
       });
-  }
+  },
 });
 
 export const {
@@ -228,7 +179,7 @@ export const {
   calculateStep,
   resetForm,
   clearError,
-  clearSubmitSuccess
+  clearSubmitSuccess,
 } = RequestSlice.actions;
 
 export default RequestSlice.reducer;

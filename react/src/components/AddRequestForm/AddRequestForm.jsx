@@ -10,6 +10,7 @@ import BasicFields from './BasicFields';
 import CategoryFields from './CategoryFields';
 import DescriptionField from './DescriptionField';
 import FormActions from './FormActions';
+import useCurrentUser from '../../hooks/useCurrentUser';
 
 import {
   fetchCategories,
@@ -21,15 +22,14 @@ import {
   resetForm,
   clearError,
 } from '../../Store/RequestSlice';
-import Cookies from "js-cookie";
 
 
 const AddRequestForm = () => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-const token = Cookies.get("token"); 
-console.log(token)
+  const { user } = useCurrentUser();
+
   const {
     categories,
     selectedCategory,
@@ -109,38 +109,13 @@ const handleSubmit = (values) => {
     description,
     priority,
     type: selectedCategory?._id,
-    assignedTo: assignedTo || "67eda8fc2b6e420787c7c907", // לפי הצורך
-    createdBy: "67eda8fc2b6e420787c7c907",  // לפי הצורך
+    assignedTo: user._id,
+    createdBy: user._id,
     fieldValues,
   };
 
-  dispatch(submitNewRequest({ ...requestData, token }));
+  dispatch(submitNewRequest({ ...requestData }));
 };
-
-  // const handleSubmit = (values) => {
-  //   const categoryFieldsData = Object.keys(values)
-  //     .filter(key => !['title', 'description', 'priority', 'category'].includes(key))
-  //     .reduce((acc, key) => {
-  //       if (values[key]) {
-  //         const field = selectedCategory?.fields?.find(f => f.fieldName === key);
-  //         const fieldLabel = field ? getFieldLabel(field.labelKey) : key;
-  //         acc[fieldLabel] = values[key];
-  //       }
-  //       return acc;
-  //     }, {});
-  //   const requestData = {
-  //     title: values.title,
-  //     description: values.description,
-  //     priority: values.priority,
-  //     category: selectedCategory?.name,
-  //     categoryFields: categoryFieldsData,
-  //     createdBy: "67eda8fc2b6e420787c7c907",
-  //     assignedTo: "67eda8fc2b6e420787c7c907"
-  //   };
-
-  //   dispatch(submitNewRequest({ ...requestData, token }));
-  // };
-
   // Handle form reset
   const handleReset = () => {
     form.resetFields();
