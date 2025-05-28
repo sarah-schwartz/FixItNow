@@ -9,7 +9,6 @@ const {
 } = require('../controllers/ticketController');
 
 const {verifyToken} = require('../middleware/auth');
-console.log("addTicket:", addTicket ); // ← אמור להדפיס פונקציה
 
 
 router.post('/', verifyToken, addTicket);

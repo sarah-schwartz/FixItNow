@@ -43,7 +43,11 @@ app.use("/Email", sendEmail);
 app.use("/Categories", categoryRouter);
 app.use("/Ticket", ticketRouter);
 
-app.get("/", (req, res) => res.send("Server is running"));
+// app.get("/", (req, res) => res.send("Server is running"));
+app.get("/", (req, res) => {
+  console.log("Cookies:", req.cookies);
+  res.send("Server is running");
+});
 
 const port = process.env.PORT || 8080;
 app.listen(port, () =>
