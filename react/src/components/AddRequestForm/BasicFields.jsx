@@ -21,7 +21,7 @@ const BasicFields = ({ categories, loading }) => {
             label="קטגוריה"
             rules={[{ required: true, message: 'נא לבחור קטגוריה' }]}
           >
-            <Select 
+            <Select
               placeholder="בחר קטגוריה"
               loading={loading}
               notFoundContent={loading ? <Spin size="small" /> : 'אין קטגוריות זמינות'}
@@ -42,9 +42,9 @@ const BasicFields = ({ categories, loading }) => {
             rules={[{ required: true, message: 'נא לבחור רמת דחיפות' }]}
           >
             <Select placeholder="בחר דחיפות">
-              {PRIORITY_LABELS_HE.map((option) => (
-                <Option key={option.value} value={option.value}>
-                  {option.label}
+              {Object.entries(PRIORITY_LABELS_HE).map(([value, label]) => (
+                <Option key={value} value={value}>
+                  {label}
                 </Option>
               ))}
             </Select>

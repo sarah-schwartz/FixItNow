@@ -20,16 +20,16 @@ import {
   calculateStep,
   resetForm,
   clearError,
-  clearSubmitSuccess
 } from '../../Store/RequestSlice';
+import Cookies from "js-cookie";
 
-import { getFieldLabel } from '../../constants/constants';
 
 const AddRequestForm = () => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
+const token = Cookies.get("token"); 
+console.log(token)
   const {
     categories,
     selectedCategory,
@@ -40,8 +40,8 @@ const AddRequestForm = () => {
     submitLoading,
     submitSuccess
   } = useSelector(state => state.newRequest);
-  const token = useSelector((state) => state.UserSlice.token);
-  console.log("Token:", token);
+ 
+
 
   useEffect(() => {
     dispatch(fetchCategories());
@@ -87,37 +87,59 @@ const AddRequestForm = () => {
     dispatch(setSelectedCategory(categoryName));
     dispatch(calculateStep());
   };
+const handleSubmit = (values) => {
+  const {
+    title,
+    description,
+    priority,
+    assignedTo,  
+  } = values;
 
-  const handleSubmit = (values) => {
-    const categoryFieldsData = Object.keys(values)
-      .filter(key => !['title', 'description', 'priority', 'category'].includes(key))
-      .reduce((acc, key) => {
-        if (values[key]) {
-          const field = selectedCategory?.fields?.find(f => f.fieldName === key);
-          const fieldLabel = field ? getFieldLabel(field.labelKey) : key;
-          acc[fieldLabel] = values[key];
-        }
-        return acc;
-      }, {});
+  const standardFields = ['title', 'description', 'priority', 'assignedTo'];
 
-    const requestData = {
-      title: values.title,
-      description: values.description,
-      priority: values.priority,
-      category: selectedCategory?.name,
-      categoryFields: categoryFieldsData,
-      createdBy: "67eda8fc2b6e420787c7c907",
-      assignedTo: "67eda8fc2b6e420787c7c907"
-    };
+  const fieldValues = Object.entries(values)
+    .filter(([key]) => !standardFields.includes(key))
+    .map(([fieldName, value]) => ({
+      fieldName,
+      value
+    }));
 
-    dispatch(submitNewRequest({ ...requestData, token }));
+  const requestData = {
+    title,
+    description,
+    priority,
+    type: selectedCategory?._id,
+    assignedTo: assignedTo || "67eda8fc2b6e420787c7c907", // לפי הצורך
+    createdBy: "67eda8fc2b6e420787c7c907",  // לפי הצורך
+    fieldValues,
   };
 
-  // Helper functions for getting user IDs
-  // const getUserId = () => getCurrentUserId();
-  // const getAssigneeId = () => getDefaultAssigneeId();
-  // const getUserId = () => "67eda8fc2b6e420787c7c907";
+  dispatch(submitNewRequest({ ...requestData, token }));
+};
 
+  // const handleSubmit = (values) => {
+  //   const categoryFieldsData = Object.keys(values)
+  //     .filter(key => !['title', 'description', 'priority', 'category'].includes(key))
+  //     .reduce((acc, key) => {
+  //       if (values[key]) {
+  //         const field = selectedCategory?.fields?.find(f => f.fieldName === key);
+  //         const fieldLabel = field ? getFieldLabel(field.labelKey) : key;
+  //         acc[fieldLabel] = values[key];
+  //       }
+  //       return acc;
+  //     }, {});
+  //   const requestData = {
+  //     title: values.title,
+  //     description: values.description,
+  //     priority: values.priority,
+  //     category: selectedCategory?.name,
+  //     categoryFields: categoryFieldsData,
+  //     createdBy: "67eda8fc2b6e420787c7c907",
+  //     assignedTo: "67eda8fc2b6e420787c7c907"
+  //   };
+
+  //   dispatch(submitNewRequest({ ...requestData, token }));
+  // };
 
   // Handle form reset
   const handleReset = () => {
