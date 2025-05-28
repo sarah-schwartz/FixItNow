@@ -33,9 +33,6 @@ export const submitNewRequest = createAsyncThunk(
         categoryFields
       } = requestData;
 
-      console.log("Submitting request:", requestData);
-
-      // Fetch category
       const categoriesResponse = await axios.get(`${baseUrl}/Categories`);
       const categories = categoriesResponse.data;
       const selectedCategory = categories.find(cat => cat.name === category);

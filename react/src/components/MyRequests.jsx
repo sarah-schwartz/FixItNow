@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { Table, Tag, Space, Layout, Select, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
 const { Search } = Input;
-//const columns = await axios.get("http://localhost:8080/TicketType/getAllTicketsByUserID/"+data.username);
+
 const columns = [
   {
     title: 'שם עובד',
@@ -17,7 +18,7 @@ const columns = [
     key: 'category',
   },
   {
-    title: ',תאריך',
+    title: 'תאריך',
     dataIndex: 'date',
     key: 'date',
   },
@@ -41,34 +42,9 @@ const columns = [
   },
   {
     title: 'סטטוס',
-    key: 'action',
-    render: (_, record) => (
-      <Space size="middle">
-        <a>Invite {record.name}</a>
-      </Space>
-    ),
+    dataIndex: 'status',
+    key: 'status',
   },
-];
-
-const data = [
-  { key: '1', name: 'טובה כהן', category: '32', date: '03/11/2024', tags: ['רגיל'], status: 'ממתין' },
-  { key: '2', name: 'לאה רוזן', category: '45', date: '21/05/2024', tags: ['דחוף'], status: 'הושלם' },
-  { key: '3', name: 'שירה לב', category: '28', date: '28/2/2025', tags: ['נמוך'], status: 'בטיפול' },
-  { key: '4', name: 'טובה כהן', category: '32', date: '03/11/2024', tags: ['רגיל'], status: 'ממתין' },
-  { key: '5', name: 'לאה רוזן', category: '45', date: '21/05/2024', tags: ['דחוף'], status: 'הושלם' },
-  { key: '6', name: 'שירה לב', category: '28', date: '28/2/2025', tags: ['נמוך'], status: 'בטיפול' },
-  { key: '7', name: 'טובה כהן', category: '32', date: '03/11/2024', tags: ['רגיל'], status: 'ממתין' },
-  { key: '8', name: 'לאה רוזן', category: '45', date: '21/05/2024', tags: ['דחוף'], status: 'הושלם' },
-  { key: '9', name: 'שירה לב', category: '28', date: '28/2/2025', tags: ['נמוך'], status: 'בטיפול' },
-  { key: '10', name: 'טובה כהן', category: '32', date: '03/11/2024', tags: ['רגיל'], status: 'ממתין' },
-  { key: '11', name: 'לאה רוזן', category: '45', date: '21/05/2024', tags: ['דחוף'], status: 'הושלם' },
-  { key: '12', name: 'שירה לב', category: '28', date: '28/2/2025', tags: ['נמוך'], status: 'בטיפול' },
-  { key: '13', name: 'טובה כהן', category: '32', date: '03/11/2024', tags: ['רגיל'], status: 'ממתין' },
-  { key: '14', name: 'לאה רוזן', category: '45', date: '21/05/2024', tags: ['דחוף'], status: 'הושלם' },
-  { key: '15', name: 'שירה לב', category: '28', date: '28/2/2025', tags: ['נמוך'], status: 'בטיפול' },
-  { key: '16', name: 'טובה כהן', category: '32', date: '03/11/2024', tags: ['רגיל'], status: 'ממתין' },
-  { key: '17', name: 'לאה רוזן', category: '45', date: '21/05/2024', tags: ['דחוף'], status: 'הושלם' },
-  { key: '18', name: 'שירה לב', category: '28', date: '28/2/2025', tags: ['נמוך'], status: 'בטיפול' },
 ];
 
 const cityData = {
@@ -80,12 +56,27 @@ const provinceData = ['דחיפות', 'סטטוס'];
 
 const MyRequests = () => {
   const navigate = useNavigate();
+  const [requests, setRequests] = useState([]);
   const [cities, setCities] = useState(cityData[provinceData[0]]);
   const [secondCity, setSecondCity] = useState('');
   const [selectedProvince, setSelectedProvince] = useState(provinceData[0]);
   const [searchText, setSearchText] = useState('');
   const [categorySearch, setCategorySearch] = useState('');
   const [dateSearch, setDateSearch] = useState('');
+
+  const userID = '67eda8fc2b6e420787c7c907'; 
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const res = await axios.get(`http://localhost:8080/Ticket/getAllTicketsByUserID/${userID}`);
+        setRequests(res.data);
+      } catch (error) {
+        console.error('Error fetching tickets:', error);
+      }
+    };
+
+    fetchRequests();
+  }, [userID]);
 
   const handleProvinceChange = (value) => {
     setSelectedProvince(value);
@@ -97,14 +88,14 @@ const MyRequests = () => {
     setSecondCity(value);
   };
 
-  const filteredData = data.filter((row) => {
-    const matchesSearch = row.name.includes(searchText);
+  const filteredData = requests.filter((row) => {
+    const matchesSearch = row.name?.includes(searchText);
     const matchesFilter =
       (!secondCity ||
-        (selectedProvince === 'דחיפות' && row.tags.includes(secondCity)) ||
+        (selectedProvince === 'דחיפות' && row.tags?.includes(secondCity)) ||
         (selectedProvince === 'סטטוס' && row.status === secondCity));
-    const matchesCategory = !categorySearch || row.category.includes(categorySearch);
-    const matchesDate = !dateSearch || row.date.includes(dateSearch);
+    const matchesCategory = !categorySearch || row.category?.includes(categorySearch);
+    const matchesDate = !dateSearch || row.date?.includes(dateSearch);
     return matchesSearch && matchesFilter && matchesCategory && matchesDate;
   });
 
@@ -149,10 +140,10 @@ const MyRequests = () => {
 
         <Table
           columns={columns}
-          dataSource={filteredData}
+          dataSource={filteredData.map((item, index) => ({ ...item, key: item._id || index }))}
           onRow={(record) => ({
             onClick: () => {
-              navigate(`/MyRequests/${record.key}`);
+              navigate(`/MyRequests/${record._id}`);
             },
             style: { cursor: 'pointer' },
           })}

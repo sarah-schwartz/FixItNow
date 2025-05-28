@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { Form, message } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 import FormHeader from './FormHeader';
 import FormSteps from './FormSteps';
@@ -22,12 +24,11 @@ import {
 } from '../../Store/RequestSlice';
 
 import { getFieldLabel } from '../../constants/constants';
-import UserSlice from "../../Store/UserSlice.jsx";
-// import { getCurrentUserId, getDefaultAssigneeId } from '../utils/userHelper';
 
 const AddRequestForm = () => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const {
     categories,
@@ -40,21 +41,28 @@ const AddRequestForm = () => {
     submitSuccess
   } = useSelector(state => state.newRequest);
   const token = useSelector((state) => state.UserSlice.token);
-console.log("Token:", token);
+  console.log("Token:", token);
 
-  // Load categories on component mount
   useEffect(() => {
     dispatch(fetchCategories());
   }, [dispatch]);
 
-  // Handle success/error messages
   useEffect(() => {
     if (submitSuccess) {
-      message.success('הבקשה נשלחה בהצלחה!');
-      form.resetFields();
-      dispatch(clearSubmitSuccess());
+      Swal.fire({
+        text: 'הפנייה נשלחה בהצלחה',
+        icon: 'success',
+        confirmButtonText: 'סגור',
+        confirmButtonColor: '#003a70',
+        customClass: {
+          confirmButton: 'swal2-rtl'
+        }
+      }).then(() => {
+        navigate('/HomePage');
+      });
+
     }
-  }, [submitSuccess, form, dispatch]);
+  }, [submitSuccess, form, navigate]);
 
   useEffect(() => {
     if (error) {
@@ -62,7 +70,6 @@ console.log("Token:", token);
       dispatch(clearError());
     }
   }, [error, dispatch]);
-
   // Handle form field changes
   const handleFieldChange = (field, value) => {
     dispatch(setFormField({ field, value }));
@@ -81,19 +88,17 @@ console.log("Token:", token);
     dispatch(calculateStep());
   };
 
-  // Handle form submission
   const handleSubmit = (values) => {
-    // Get category fields data
     const categoryFieldsData = Object.keys(values)
-        .filter(key => !['title', 'description', 'priority', 'category'].includes(key))
-        .reduce((acc, key) => {
-          if (values[key]) {
-            const field = selectedCategory?.fields?.find(f => f.fieldName === key);
-            const fieldLabel = field ? getFieldLabel(field.labelKey) : key;
-            acc[fieldLabel] = values[key];
-          }
-          return acc;
-        }, {});
+      .filter(key => !['title', 'description', 'priority', 'category'].includes(key))
+      .reduce((acc, key) => {
+        if (values[key]) {
+          const field = selectedCategory?.fields?.find(f => f.fieldName === key);
+          const fieldLabel = field ? getFieldLabel(field.labelKey) : key;
+          acc[fieldLabel] = values[key];
+        }
+        return acc;
+      }, {});
 
     const requestData = {
       title: values.title,
@@ -105,7 +110,7 @@ console.log("Token:", token);
       assignedTo: "67eda8fc2b6e420787c7c907"
     };
 
-dispatch(submitNewRequest({ ...requestData, token }));
+    dispatch(submitNewRequest({ ...requestData, token }));
   };
 
   // Helper functions for getting user IDs
@@ -135,49 +140,50 @@ dispatch(submitNewRequest({ ...requestData, token }));
   };
 
   return (
-      <div
-          style={{
-            width: '100%',
-            maxWidth: '900px',
-            margin: '0 auto',
-            padding: '2rem',
-            background: '#fff',
-            borderRadius: '12px',
-            boxShadow: '0 0 10px rgba(0,0,0,0.05)',
-          }}
+    <div
+      style={{
+        width: '100%',
+        maxWidth: '900px',
+        margin: '0 auto',
+        padding: '2rem',
+        background: '#fff',
+        borderRadius: '12px',
+        boxShadow: '0 0 10px rgba(0,0,0,0.05)',
+      }}
+    >
+      <Form
+        layout="vertical"
+        form={form}
+        onFinish={handleSubmit}
+        onValuesChange={handleValuesChange}
+        requiredMark={false}
+        initialValues={formData}
       >
-        <Form
-            layout="vertical"
-            form={form}
-            onFinish={handleSubmit}
-            onValuesChange={handleValuesChange}
-            requiredMark={false}
-            initialValues={formData}
-        >
-          <FormHeader title="הגשת בקשה חדשה" />
+        <FormHeader title="הגשת בקשה חדשה" />
 
-          <FormSteps currentStep={currentStep} />
+        <FormSteps currentStep={currentStep} />
 
-          <BasicFields
-              categories={categories}
-              loading={loading}
+        <BasicFields
+          categories={categories}
+          loading={loading}
+        />
+
+        {selectedCategory && selectedCategory.fields.length > 0 && (
+          <CategoryFields
+            category={selectedCategory}
           />
+        )}
 
-          {selectedCategory && selectedCategory.fields.length > 0 && (
-              <CategoryFields
-                  category={selectedCategory}
-              />
-          )}
+        <DescriptionField />
 
-          <DescriptionField />
-
-          <FormActions
-              onReset={handleReset}
-              loading={submitLoading}
-          />
-        </Form>
-      </div>
+        <FormActions
+          onReset={handleReset}
+          loading={submitLoading}
+        />
+      </Form>
+    </div>
   );
 };
 
 export default AddRequestForm;
+

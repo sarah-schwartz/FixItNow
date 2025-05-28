@@ -1,5 +1,5 @@
 import { Form, Input, Row, Col, Select, Spin } from 'antd';
-import { getCategoryLabel, PRIORITY_OPTIONS } from '../../constants/constants';
+import { getCategoryLabel, PRIORITY_LABELS_HE } from '../../constants/constants';
 
 const { Option } = Select;
 
@@ -42,7 +42,7 @@ const BasicFields = ({ categories, loading }) => {
             rules={[{ required: true, message: 'נא לבחור רמת דחיפות' }]}
           >
             <Select placeholder="בחר דחיפות">
-              {PRIORITY_OPTIONS.map((option) => (
+              {PRIORITY_LABELS_HE.map((option) => (
                 <Option key={option.value} value={option.value}>
                   {option.label}
                 </Option>
