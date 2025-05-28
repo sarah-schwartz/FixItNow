@@ -15,7 +15,7 @@ router.post('/', verifyToken, addTicket);
 
 router.get('/my-tickets/:id', getAllTicketsByUserID);
 
-router.get('/:id', verifyToken, getTicketByID);
+router.get('/:id', getTicketByID);
 
 router.get('/', verifyToken, getAllOpenTickets);
 
