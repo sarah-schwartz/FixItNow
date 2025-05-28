@@ -27,7 +27,7 @@ const ProfilePage = () => {
           }
         });
         
-        console.log('Profile response:', response.data);
+        console.log('Profile response:', response);
         
         setName(response.data.userName);
         setEmail(response.data.email);

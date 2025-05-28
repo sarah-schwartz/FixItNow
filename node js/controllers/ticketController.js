@@ -23,12 +23,13 @@ async function addTicket(req, res) {
 
 async function getAllTicketsByUserID(req, res) {
     try {
-        const user = req.user;
-        if (!user || !user._id) {
+        const { id } = req.params;
+        //const user = req.user;
+        if (!id ) {
             return res.status(400).json({ message: 'Invalid user info' });
         }
 
-        const tickets = await Ticket.find({ createdBy: user._id });
+        const tickets = await Ticket.find({ createdBy: id});
         res.status(200).json(tickets);
     } catch (error) {
         res.status(500).json({ message: error.message });

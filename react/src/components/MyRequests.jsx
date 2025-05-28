@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, Tag, Space, Layout, Select, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import useTransformData from '../hooks/useTransformData';
 
 const { Search } = Input;
 
@@ -22,23 +24,18 @@ const columns = [
     key: 'date',
   },
   {
-    title: 'דחיפות',
-    key: 'tags',
-    dataIndex: 'tags',
-    render: (_, { tags }) => (
-      <>
-        {tags.map(tag => {
-          let color = tag === 'נמוך' ? 'geekblue' : 'green';
-          if (tag === 'דחוף') color = 'volcano';
-          return (
-            <Tag color={color} key={tag}>
-              {tag.toUpperCase()}
-            </Tag>
-          );
-        })}
-      </>
-    ),
+  title: 'דחיפות',
+  dataIndex: 'tags',
+  key: 'tags',
+  render: (priority) => {
+    let color;
+    if (priority === 'נמוך') color = 'geekblue';
+    else if (priority === 'רגיל') color = 'green';
+    else if (priority === 'דחוף') color = 'volcano';
+    else color = 'default';
+    return <Tag color={color}>{priority}</Tag>;
   },
+},
   {
     title: 'סטטוס',
     dataIndex: 'status',
@@ -54,35 +51,101 @@ const columns = [
   },
 ];
 
-const data = [
-  { key: '1', name: 'טובה כהן', category: '32', date: '03/11/2024', tags: ['רגיל'], status: 'ממתין' },
-  { key: '2', name: 'לאה רוזן', category: '45', date: '21/05/2024', tags: ['דחוף'], status: 'הושלם' },
-  { key: '3', name: 'שירה לב', category: '28', date: '28/2/2025', tags: ['נמוך'], status: 'בטיפול' },
-  // הוסיפי שורות נוספות לפי הצורך
-];
-
 const urgencyOptions = ['נמוך', 'רגיל', 'דחוף'];
 const statusOptions = ['ממתין', 'בטיפול', 'הושלם'];
 
 const MyRequests = () => {
   const navigate = useNavigate();
+  const [tickets, setTickets] = useState([]);
+  const [loadingTickets, setLoadingTickets] = useState(true);
+  const [errorTickets, setErrorTickets] = useState(null);
+
   const [urgencyFilter, setUrgencyFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [searchText, setSearchText] = useState('');
   const [categorySearch, setCategorySearch] = useState('');
   const [dateSearch, setDateSearch] = useState('');
 
-  const filteredData = data.filter((row) => {
-    const matchesUrgency =
-      !urgencyFilter || row.tags.includes(urgencyFilter);
-    const matchesStatus =
-      !statusFilter || row.status === statusFilter;
+  // אנחנו נשתמש ב-hook useTransformData עבור כל פנייה בנפרד
+  // אבל מכיוון ש-hook לא ניתן לקרוא בתוך לולאה, נשנה את הגישה:
+  // במקום זה, ניצור פונקציה אסינכרונית שעוברת על הפניות ומעבדת אותן.
+
+  useEffect(() => {
+    const fetchAndTransformTickets = async () => {
+      try {
+        setLoadingTickets(true);
+        setErrorTickets(null);
+        const userRes = await axios.get("http://localhost:8080/auth/me", {
+          withCredentials: true,
+          headers: { "Content-Type": "application/json" },
+        });
+        console.log(userRes.data.id)
+
+
+        // 1. הבאת כל הפניות מהשרת
+        const res = await axios.get(
+          `http://localhost:8080/Ticket/my-tickets/${userRes.data.id}`,
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+        console.log(res)
+        const rawTickets = res.data;
+
+        // 2. פונקציה שמדמה את useTransformData (משתמשת באותה לוגיקה)
+        // מאחר ואין אפשרות לקרוא hook בתוך לולאה, נעתיק כאן לוגיקה דומה:
+        async function transformTicket(t) {
+          // שליפת שם משתמש
+          const userResponse = await axios.get('http://localhost:8080/auth/me', {
+            withCredentials: true,
+            headers: { 'Content-Type': 'application/json' },
+          });
+          console.log(t.type)
+          // שליפת שם קטגוריה
+          const categoryResponse = await axios.get(
+            `http://localhost:8080/Categories/getCategoryNameById/${t.type}`,
+            { headers: { 'Content-Type': 'application/json' } }
+          );
+
+          function formatDateOnly(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleDateString('he-IL');
+          }
+
+          return {
+            key: t._id,
+            name: userResponse.data.userName,
+            category: categoryResponse.data,
+            date: formatDateOnly(t.createdAt),
+            tags: t.priority, // ניתן לשפר לפי הדחיפות אם יש שדה מתאים ב-t
+            status: t.status,
+          };
+        }
+
+        // 3. המרת כל הפניות במקביל
+        const transformedTickets = await Promise.all(rawTickets.map(t => transformTicket(t)));
+        console.log(transformedTickets)
+        setTickets(transformedTickets);
+      } catch (err) {
+        setErrorTickets(err);
+      } finally {
+        setLoadingTickets(false);
+      }
+    };
+
+    fetchAndTransformTickets();
+  }, []);
+
+  // סינון לפי הקלטים מהמשתמש
+  const filteredData = tickets.filter((row) => {
+    const matchesUrgency = !urgencyFilter || row.tags.includes(urgencyFilter);
+    const matchesStatus = !statusFilter || row.status === statusFilter;
     const matchesSearch = row.name.includes(searchText);
     const matchesCategory = !categorySearch || row.category.includes(categorySearch);
     const matchesDate = !dateSearch || row.date.includes(dateSearch);
-
     return matchesUrgency && matchesStatus && matchesSearch && matchesCategory && matchesDate;
   });
+
+  if (loadingTickets) return <div>טוען פניות...</div>;
+  if (errorTickets) return <div>שגיאה בטעינת הפניות: {errorTickets.message}</div>;
 
   return (
     <Layout style={{ minHeight: '85vh' }}>
