@@ -6,7 +6,6 @@ const User = require("../models/User")
 //     let newC = await new User(req.body)
 //     await newC.save()
 //     res.json({ message: "created successfully"+newC });
-//     //res.send("created successful" + newC)
 // }
 async function getUserbyName(req, res) {
     try {
@@ -34,5 +33,13 @@ async function getUserbyId(req, res) {
         res.status(500).send({ message: "Server error", error: err.message });
     }
 }
+async function getAllUsers(req, res) {
+    try {
+        const users = await User.find().select('_id userName email role');
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch users", error });
+    }
+}
 
-module.exports={getUserbyName,getUserbyId}
+module.exports={getUserbyName,getUserbyId,getAllUsers}

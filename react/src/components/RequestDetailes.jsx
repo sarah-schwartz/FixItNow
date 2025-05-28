@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom';
 import { Card, Tag, Typography, Layout, Divider, Row, Col, Input, Button, message } from 'antd';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Loader } from 'lucide-react';
 
 const { Paragraph, Text, Title } = Typography;
 const { TextArea } = Input;
@@ -153,7 +154,7 @@ const TicketDetails = () => {
 
   const category = categories.find(c => c.name === 'folder_access');
 
-  if (loadingTicket) return <Text>טוען פנייה...</Text>;
+  if (loadingTicket) return <Text><Loader/></Text>;
   if (error || !ticket) return <Text>לא נמצאה פנייה</Text>;
 
   return (

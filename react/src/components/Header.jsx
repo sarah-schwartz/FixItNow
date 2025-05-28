@@ -3,6 +3,7 @@ import { Layout, Avatar, Dropdown, Button, Badge, theme } from 'antd';
 import { BellOutlined, UserOutlined, MenuOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Loader from './Loader';
 
 const Logo = lazy(() => import('./Logo'));
 const { Header: AntHeader } = Layout;
@@ -74,7 +75,7 @@ const Header = () => {
       }}
     >
       <div className="header-left">
-        <Suspense fallback={<div style={{ color: 'white' }}>טוען...</div>}>
+        <Suspense fallback={<div style={{ color: 'white' }}><Loader/></div>}>
           <Link to="/HomePage" style={{ display: 'flex', alignItems: 'center' }}>
             <Logo />
           </Link>

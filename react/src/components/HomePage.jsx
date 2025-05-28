@@ -30,7 +30,7 @@ const cardData = [
   {
     icon: <ClockCircleOutlined />,
     title: 'ממתין לאישור',
-    link: '/pending-approvals'
+    link: '/AllRequests'
   },
 ];
 

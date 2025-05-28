@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import FormHeader from './FormHeader';
 import FormSteps from './FormSteps';
 import BasicFields from './BasicFields';
+import AssignedToField from './AssignedToField'; 
 import CategoryFields from './CategoryFields';
 import DescriptionField from './DescriptionField';
 import FormActions from './FormActions';
@@ -24,6 +25,8 @@ import {
 } from '../../Store/RequestSlice';
 
 
+// ... כל הייבוא נשאר כמו קודם
+
 const AddRequestForm = () => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
@@ -39,6 +42,7 @@ const AddRequestForm = () => {
     submitLoading,
     submitSuccess
   } = useSelector(state => state.newRequest);
+
   useEffect(() => {
     dispatch(fetchCategories());
   }, [dispatch]);
@@ -57,7 +61,6 @@ const AddRequestForm = () => {
         dispatch(resetForm()); 
         navigate('/HomePage');
       });
-
     }
   }, [submitSuccess, form, navigate]);
 
@@ -67,19 +70,17 @@ const AddRequestForm = () => {
       dispatch(clearError());
     }
   }, [error, dispatch]);
-  // Handle form field changes
+
   const handleFieldChange = (field, value) => {
     dispatch(setFormField({ field, value }));
     dispatch(calculateStep());
   };
 
-  // Handle category field changes
   const handleCategoryFieldChange = (fieldName, value) => {
     dispatch(setCategoryFields({ [fieldName]: value }));
     dispatch(calculateStep());
   };
 
-  // Handle category selection
   const handleCategoryChange = (categoryId) => {
     const categoryObject = categories.find(cat => cat._id === categoryId);
     dispatch(setSelectedCategory(categoryObject || null));
@@ -94,7 +95,7 @@ const AddRequestForm = () => {
       assignedTo,
     } = values;
 
-    const standardFields = ['title', 'description', 'priority', 'assignedTo'];
+    const standardFields = ['title', 'description', 'priority'];
 
     const fieldValues = Object.entries(values)
       .filter(([key]) => !standardFields.includes(key))
@@ -108,20 +109,19 @@ const AddRequestForm = () => {
       description,
       priority,
       type: selectedCategory?._id,
-      assignedTo: user?.id,
+      assignedTo,
       createdBy: user?.id,
       fieldValues,
     };
 
     dispatch(submitNewRequest({ ...requestData }));
   };
-  // Handle form reset
+
   const handleReset = () => {
     form.resetFields();
     dispatch(resetForm());
   };
 
-  // Handle form values change
   const handleValuesChange = (changedValues, allValues) => {
     Object.keys(changedValues).forEach(key => {
       if (key === 'category') {
@@ -129,7 +129,6 @@ const AddRequestForm = () => {
       } else if (['title', 'priority', 'description'].includes(key)) {
         handleFieldChange(key, changedValues[key]);
       } else {
-        // Category-specific field
         handleCategoryFieldChange(key, changedValues[key]);
       }
     });
@@ -155,9 +154,9 @@ const AddRequestForm = () => {
         requiredMark={false}
         initialValues={formData}
       >
-        <FormHeader title="הגשת בקשה חדשה" />
+        <FormHeader title="הגשת בקשה חדשה" loading={loading} />
 
-        <FormSteps currentStep={currentStep} />
+        <FormSteps currentStep={currentStep} loading={loading} />
 
         <BasicFields
           categories={categories}
@@ -167,13 +166,18 @@ const AddRequestForm = () => {
         {selectedCategory && selectedCategory.fields.length > 0 && (
           <CategoryFields
             category={selectedCategory}
+            loading={loading}
           />
         )}
-
-        <DescriptionField />
+<AssignedToField />
+        <DescriptionField
+          value={formData.description}
+          onChange={(val) => handleFieldChange('description', val)}
+          loading={loading}
+        />
 
         <FormActions
-          onReset={handleReset}
+          onSave={form.submit}
           loading={submitLoading}
         />
       </Form>
@@ -182,4 +186,3 @@ const AddRequestForm = () => {
 };
 
 export default AddRequestForm;
-

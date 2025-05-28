@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Table, Tag, Space, Layout, Select, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/axiosInstance'; 
+import Loader from './Loader'
 import {
   getPriorityLabel,
   getCategoryLabel,
@@ -9,7 +10,6 @@ import {
   PRIORITY_LABELS_HE,
   STATUS_LABELS_HE
 } from '../constants/constants';
-import Loader from './Loader';
 
 const { Search } = Input;
 
@@ -61,7 +61,6 @@ const columns = [
   },
 ];
 
-// הגדרת אפשרויות סינון מתוך הקונסטנטים
 const urgencyOptions = Object.entries(PRIORITY_LABELS_HE).map(([value, label]) => ({
   value,
   label
@@ -72,7 +71,7 @@ const statusOptions = Object.entries(STATUS_LABELS_HE).map(([value, label]) => (
   label
 }));
 
-const MyRequests = () => {
+const AllRequests = () => {
   const navigate = useNavigate();
   const [tickets, setTickets] = useState([]);
   const [loadingTickets, setLoadingTickets] = useState(true);
@@ -90,28 +89,12 @@ const MyRequests = () => {
         setLoadingTickets(true);
         setErrorTickets(null);
 
-        const userRes = await axios.get("http://localhost:8080/auth/me", {
-          withCredentials: true,
-          headers: { "Content-Type": "application/json" },
-        });
-
-        const res = await axios.get(
-          `http://localhost:8080/Ticket/my-tickets/${userRes.data.id}`,
-          { headers: { 'Content-Type': 'application/json' } }
-        );
-
+        const res = await api.get('/Ticket');
         const rawTickets = res.data;
 
         async function transformTicket(t) {
-          const userResponse = await axios.get('http://localhost:8080/auth/me', {
-            withCredentials: true,
-            headers: { 'Content-Type': 'application/json' },
-          });
-
-          const categoryResponse = await axios.get(
-            `http://localhost:8080/Categories/getCategoryNameById/${t.type}`,
-            { headers: { 'Content-Type': 'application/json' } }
-          );
+          const userResponse = await api.get(`/auth/user/${t.userId}`);
+          const categoryResponse = await api.get(`/Categories/getCategoryNameById/${t.type}`);
 
           function formatDateOnly(isoString) {
             const date = new Date(isoString);
@@ -122,7 +105,7 @@ const MyRequests = () => {
             key: t._id,
             _id: t._id,
             name: userResponse.data.userName,
-            category: categoryResponse.data, // מחזיר מפתח באנגלית
+            category: categoryResponse.data,
             date: formatDateOnly(t.createdAt),
             tags: t.priority,
             status: t.status,
@@ -150,13 +133,13 @@ const MyRequests = () => {
     return matchesUrgency && matchesStatus && matchesSearch && matchesCategory && matchesDate;
   });
 
-  if (loadingTickets) return <div><Loader/></div>;
+  if (loadingTickets) return <div></div>;
   if (errorTickets) return <div>שגיאה בטעינת הפניות: {errorTickets.message}</div>;
 
   return (
     <Layout style={{ minHeight: '85vh' }}>
       <div style={{ padding: '60px' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '24px' }}>הבקשות שלי</h2>
+        <h2 style={{ textAlign: 'center', marginBottom: '24px' }}>כל הבקשות</h2>
 
         <Space wrap style={{ marginBottom: '24px' }}>
           <Select
@@ -211,4 +194,4 @@ const MyRequests = () => {
   );
 };
 
-export default MyRequests;
+export default AllRequests;
