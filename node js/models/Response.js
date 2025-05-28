@@ -8,4 +8,4 @@ const ResponseSchema = mongoose.Schema({
     responses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Response' }]
 }, { timestamps: true });
 
-module.exports = mongoose.model("Ticket", ResponseSchema);
+module.exports = mongoose.model("Response", ResponseSchema);

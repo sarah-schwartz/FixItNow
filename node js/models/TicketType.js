@@ -14,3 +14,4 @@ const TicketTypeSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model("TicketType", TicketTypeSchema);
+  
