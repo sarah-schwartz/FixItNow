@@ -29,7 +29,6 @@ const AddRequestForm = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useCurrentUser();
-
   const {
     categories,
     selectedCategory,
@@ -40,9 +39,6 @@ const AddRequestForm = () => {
     submitLoading,
     submitSuccess
   } = useSelector(state => state.newRequest);
- 
-
-
   useEffect(() => {
     dispatch(fetchCategories());
   }, [dispatch]);
@@ -58,6 +54,7 @@ const AddRequestForm = () => {
           confirmButton: 'swal2-rtl'
         }
       }).then(() => {
+        dispatch(resetForm()); 
         navigate('/HomePage');
       });
 
@@ -83,39 +80,41 @@ const AddRequestForm = () => {
   };
 
   // Handle category selection
-  const handleCategoryChange = (categoryName) => {
-    dispatch(setSelectedCategory(categoryName));
+  const handleCategoryChange = (categoryId) => {
+    const categoryObject = categories.find(cat => cat._id === categoryId);
+    dispatch(setSelectedCategory(categoryObject || null));
     dispatch(calculateStep());
   };
-const handleSubmit = (values) => {
-  const {
-    title,
-    description,
-    priority,
-    assignedTo,  
-  } = values;
 
-  const standardFields = ['title', 'description', 'priority', 'assignedTo'];
+  const handleSubmit = (values) => {
+    const {
+      title,
+      description,
+      priority,
+      assignedTo,
+    } = values;
 
-  const fieldValues = Object.entries(values)
-    .filter(([key]) => !standardFields.includes(key))
-    .map(([fieldName, value]) => ({
-      fieldName,
-      value
-    }));
+    const standardFields = ['title', 'description', 'priority', 'assignedTo'];
 
-  const requestData = {
-    title,
-    description,
-    priority,
-    type: selectedCategory?._id,
-    assignedTo: user._id,
-    createdBy: user._id,
-    fieldValues,
+    const fieldValues = Object.entries(values)
+      .filter(([key]) => !standardFields.includes(key))
+      .map(([fieldName, value]) => ({
+        fieldName,
+        value
+      }));
+
+    const requestData = {
+      title,
+      description,
+      priority,
+      type: selectedCategory?._id,
+      assignedTo: user?.id,
+      createdBy: user?.id,
+      fieldValues,
+    };
+
+    dispatch(submitNewRequest({ ...requestData }));
   };
-
-  dispatch(submitNewRequest({ ...requestData }));
-};
   // Handle form reset
   const handleReset = () => {
     form.resetFields();

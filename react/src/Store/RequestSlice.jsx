@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from '../services/axiosInstance'; 
+import axios from '../services/axiosInstance';
 
 const initialState = {
   formData: {
@@ -34,49 +34,39 @@ export const fetchCategories = createAsyncThunk(
 
 export const submitNewRequest = createAsyncThunk(
   'newRequest/submitNewRequest',
-  async (requestData, { rejectWithValue }) => {
+  async (requestData, { rejectWithValue, getState }) => {
     try {
       const {
         title,
-        category,
+        type,
         priority,
         description,
         createdBy,
         assignedTo,
-        categoryFields,
+        fieldValues, // קלט מוכן מהקומפוננטה
       } = requestData;
 
-      const categoriesResponse = await axios.get('/categories');
-      const categories = categoriesResponse.data;
-      const selectedCategory = categories.find(cat => cat.name === category);
-      if (!selectedCategory) throw new Error('קטגוריה לא נמצאה');
+      const state = getState();
+      const selectedCategory = state.newRequest.selectedCategory;
 
-      let ticketTypeResponse;
-      try {
-        ticketTypeResponse = await axios.post('/TicketType/addTicketType', {
-          name: category,
-          category: selectedCategory._id,
-        });
-      } catch {
-        console.log('Ticket type might already exist');
+      if (!selectedCategory || !selectedCategory.name || !selectedCategory._id) {
+        throw new Error('קטגוריה לא נמצאה');
       }
 
       const ticketData = {
         title,
         description,
         priority,
-        type: ticketTypeResponse?.data?._id || selectedCategory._id,
+        type,
         createdBy,
         assignedTo: assignedTo || createdBy,
-        fieldValues: Object.entries(categoryFields).map(([fieldName, value]) => ({
-          fieldName,
-          value,
-        })),
+        fieldValues, // פשוט השתמש בזה
       };
 
       const response = await axios.post('/Ticket', ticketData);
       return response.data;
     } catch (error) {
+      console.log(error);
       return rejectWithValue(
         error.response?.data?.message || error.message || 'שגיאה בשליחת הבקשה'
       );
@@ -99,13 +89,11 @@ const RequestSlice = createSlice({
       };
     },
     setSelectedCategory: (state, action) => {
-      const categoryName = action.payload;
-      state.selectedCategory =
-        state.categories.find(cat => cat.name === categoryName) || null;
-      state.formData.category = categoryName;
+      const categoryObj = action.payload;
+      state.selectedCategory = categoryObj;
+      state.formData.category = categoryObj?._id || '';
       state.formData.categoryFields = {};
-    },
-    setCurrentStep: (state, action) => {
+    }, setCurrentStep: (state, action) => {
       state.currentStep = action.payload;
     },
     calculateStep: (state) => {

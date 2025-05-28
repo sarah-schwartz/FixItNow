@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
-const baseUrl = import.meta.env.VITE_API_BASE_URL;
+import axiosInstance from '../services/axiosInstance'
 
 export default function useCurrentUser() {
   const [user, setUser] = useState(null);
@@ -10,12 +9,7 @@ export default function useCurrentUser() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get(`${baseUrl}/auth/me`, {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
+        const response = await axiosInstance.get('/auth/me');
         setUser(response.data);
       } catch (err) {
         setError(err);

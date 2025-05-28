@@ -25,9 +25,12 @@ const BasicFields = ({ categories, loading }) => {
               placeholder="בחר קטגוריה"
               loading={loading}
               notFoundContent={loading ? <Spin size="small" /> : 'אין קטגוריות זמינות'}
+              onChange={(value) => {
+                window.dispatchEvent(new CustomEvent('categoryChanged', { detail: value }));
+              }}
             >
               {categories.map((category) => (
-                <Option key={category._id} value={category.name}>
+                <Option key={category._id} value={category._id}>
                   {getCategoryLabel(category.name)}
                 </Option>
               ))}
