@@ -1,7 +1,8 @@
 import { useParams } from 'react-router-dom';
 import { Card, Tag, Typography, Layout, Divider, Row, Col, Input, Button, message } from 'antd';
-import { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+
 const { Paragraph, Text, Title } = Typography;
 const { TextArea } = Input;
 
@@ -9,55 +10,87 @@ const TicketDetails = () => {
   const { id } = useParams();
   const [reply, setReply] = useState('');
   const [loading, setLoading] = useState(false);
+  const [ticket, setTicket] = useState(null);
+  const [loadingTicket, setLoadingTicket] = useState(true);
+  const [error, setError] = useState(null);
+  const [responses, setResponses] = useState([]);
+  const [usersMap, setUsersMap] = useState({}); // מפת ID למשתמשים
 
-  // הגדרת טיקט לדוגמה
-  const ticket = {
-    "_id": "1234567890abcdef",
-    "title": "בקשת גישה למסד נתונים",
-    "description": "אני צריך גישה למאגר הנתונים של המוצר כדי לבצע חיקויים בנתונים של לקוחות. אשמח לקבל גישה בהקדם האפשרי.",
-    "category": "database_access",
-    "serverName": "db-server-01",
-    "schemaName": "inventory",
-    "permission": "read",
-    "createdAt": "2025-05-25T10:15:00.000Z",
-    "createdBy": "user123",
-    "status": "ממתין",
-    "priority": "רגילה",
-  };
+  useEffect(() => {
+    // פונקציה לשליפת שם משתמש לפי ID
+    const fetchUserNameById = async (userId) => {
+      if (!userId) return null;
+      // אם כבר קיים במפה נחזיר מיידית
+      if (usersMap[userId]) return usersMap[userId];
+      try {
+        debugger
+        const res = await axios.get(`http://localhost:8080/api/user/getUserById/${userId}`);
+        console.log("user"+res.data+userId)
+        const userName = res.data.user.userName || "שם לא נמצא";
+        setUsersMap(prev => ({ ...prev, [userId]: userName }));
+        return userName;
+      } catch (err) {
+        console.error("Error fetching user name for ID:", userId, err);
+        setUsersMap(prev => ({ ...prev, [userId]: userId })); // במקרה של שגיאה נשמור את ה-ID
+        return userId;
+      }
+    };
 
-  const initialResponses = [
-    {
-      content: "תוכלי לשלוח לי צילום מסך של הבעיה?",
-      createdAt: "2025-05-24T14:20:00.000Z",
-      author: "supportAgent1"
-    },
-    {
-      content: "נשלח",
-      createdAt: "2025-05-24T15:00:00.000Z",
-      author: "supportAgent2"
-    },
-    {
-      content: "טופל",
-      createdAt: "2025-05-24T16:00:00.000Z",
-      author: "supportAgent1"
-    }
-  ];
+    const fetchTicket = async () => {
+      try {
+        setLoadingTicket(true);
+        setError(null);
+        const res = await axios.get(`http://localhost:8080/Ticket/${id}`, {
+          headers: { "Content-Type": "application/json" },
+        });
+        setTicket(res.data);
 
-  const [responses, setResponses] = useState(initialResponses);
+        // שליפת תגובות מלאות
+        let fullResponses = [];
+        if (res.data.responses && res.data.responses.length > 0) {
+          fullResponses = await Promise.all(
+            res.data.responses.map(async (responseId) => {
+              try {
+                const responseRes = await axios.get(`http://localhost:8080/response/getResponseByID/${responseId}`);
+                return responseRes.data;
+              } catch (err) {
+                console.error(`Error fetching response ${responseId}:`, err);
+                return null;
+              }
+            })
+          );
+          fullResponses = fullResponses.filter(r => r !== null);
+          setResponses(fullResponses);
+        } else {
+          setResponses([]);
+        }
 
-  const categories = [
-    {
-      name: "database_access",
-      fields: [
-        { fieldName: "serverName", labelKey: "שם שרת" },
-        { fieldName: "schemaName", labelKey: "סכמה" },
-        { fieldName: "permission", labelKey: "רמת הרשאה" }
-      ]
-    }
-  ];
+        // שליפת שמות משתמשים לפנייה ולתגובות
+        const userIdsToFetch = new Set();
 
-  const category = categories.find(c => c.name === ticket?.category);
-  if (!ticket || !category) return <Text>לא נמצאה פנייה</Text>;
+        // מזהה היוצר של הפנייה
+        if (res.data.createdBy) userIdsToFetch.add(res.data.createdBy);
+
+        // מזהי היוצרים של התגובות
+        fullResponses.forEach(resp => {
+          if (resp.createdBy) userIdsToFetch.add(resp.createdBy);
+          if (resp.sender) userIdsToFetch.add(resp.sender);
+          if (resp.author) userIdsToFetch.add(resp.author);
+        });
+
+        await Promise.all([...userIdsToFetch].map(id => fetchUserNameById(id)));
+
+      } catch (err) {
+        console.error("שגיאה בשליפת טיקט", err);
+        setError(err);
+        message.error("שגיאה בטעינת הפנייה");
+      } finally {
+        setLoadingTicket(false);
+      }
+    };
+
+    fetchTicket();
+  }, [id]);
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -66,27 +99,19 @@ const TicketDetails = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'ממתין':
-        return 'gold';
-      case 'בטיפול':
-        return 'blue';
-      case 'נסגר':
-        return 'green';
-      default:
-        return 'default';
+      case 'waiting': return 'gold';
+      case 'in_progress': return 'blue';
+      case 'closed': return 'green';
+      default: return 'default';
     }
   };
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'נמוך':
-        return 'default';
-      case 'רגילה':
-        return 'blue';
-      case 'דחוף':
-        return 'red';
-      default:
-        return 'default';
+      case 'low': return 'default';
+      case 'medium': return 'blue';
+      case 'high': return 'red';
+      default: return 'default';
     }
   };
 
@@ -99,20 +124,37 @@ const TicketDetails = () => {
     setLoading(true);
 
     setTimeout(() => {
-      debugger
       const newResponse = {
         content: reply,
         createdAt: new Date().toISOString(),
         author: "חי"
-        //const count = useSelector((state) => state.counter.value);
       };
 
-      setResponses([...responses, newResponse]); // עדכון נכון של state
+      setResponses([...responses, newResponse]);
       setReply('');
       setLoading(false);
       message.success('המענה נשלח בהצלחה');
     }, 1000);
   };
+  const getFieldValue = (fieldName) => {
+    return ticket.fieldValues?.find(f => f.fieldName === fieldName)?.value || '---';
+  };
+
+  const categories = [
+    {
+      name: "folder_access",
+      fields: [
+        { fieldName: "path", labelKey: "נתיב תיקייה" },
+        { fieldName: "permission", labelKey: "הרשאה" },
+        { fieldName: "folderName", labelKey: "שם תיקייה" }
+      ]
+    }
+  ];
+
+  const category = categories.find(c => c.name === 'folder_access');
+
+  if (loadingTicket) return <Text>טוען פנייה...</Text>;
+  if (error || !ticket) return <Text>לא נמצאה פנייה</Text>;
 
   return (
     <Layout
@@ -130,8 +172,8 @@ const TicketDetails = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Title level={4} style={{ margin: 0 }}>{ticket.title}</Title>
             <div>
-              <Tag color={getStatusColor(ticket.status)}>ממתין</Tag>
-              <Tag color={getPriorityColor(ticket.priority)}>רגיל</Tag>
+              <Tag color={getStatusColor(ticket.status)}>{ticket.status}</Tag>
+              <Tag color={getPriorityColor(ticket.priority)}>{ticket.priority}</Tag>
             </div>
           </div>
         }
@@ -156,7 +198,7 @@ const TicketDetails = () => {
           </Col>
           <Col xs={24} sm={8}>
             <Text strong>על ידי</Text><br />
-            <Text>{ticket.createdBy}</Text>
+            <Text>{usersMap[ticket.createdBy] || ticket.createdBy}</Text>
           </Col>
         </Row>
 
@@ -164,18 +206,20 @@ const TicketDetails = () => {
         <Card type="inner" style={{ backgroundColor: '#fafafa', marginBottom: 24 }}>
           <Paragraph style={{ marginBottom: 0 }}>{ticket.description}</Paragraph>
         </Card>
-
-        <Divider orientation="left" style={{ borderColor: '#1677ff', color: '#1677ff' }}>פרטי קטגוריה</Divider>
-        <div style={{ textAlign: 'right', paddingRight: 8 }}>
-          {category.fields.map((field) => (
-            <div key={field.fieldName} style={{ marginBottom: 20 }}>
-              <Text strong>{field.labelKey}:</Text> {ticket[field.fieldName]}
+{category && (
+          <>
+            <Divider orientation="left" style={{ borderColor: '#1677ff', color: '#1677ff' }}>פרטי קטגוריה</Divider>
+            <div style={{ textAlign: 'right', paddingRight: 8 }}>
+              {category.fields.map((field) => (
+                <div key={field.fieldName} style={{ marginBottom: 20 }}>
+                  <Text strong>{field.labelKey}:</Text> {getFieldValue(field.fieldName)}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
       </Card>
 
-      {/* תגובות לפנייה */}
       {responses.length > 0 && (
         <div style={{ width: '100%', maxWidth: 700, marginTop: 24 }}>
           <Divider orientation="left" style={{ borderColor: '#1677ff', color: '#1677ff' }}>תגובות קודמות</Divider>
@@ -192,7 +236,9 @@ const TicketDetails = () => {
             >
               <Row justify="space-between" align="top">
                 <Col span={16} style={{ textAlign: 'right' }}>
-                  <Text style={{ fontSize: '16px' }}>{res.content}</Text>
+                  {res.responses ? res.responses.map((text, i) => (
+                    <Paragraph key={i} style={{ marginBottom: 4 }}>{text}</Paragraph>
+                  )) : <Paragraph>{res.content || ''}</Paragraph>}
                 </Col>
                 <Col span={8} style={{ textAlign: 'left', fontSize: '12px', color: '#888' }}>
                   <Row gutter={16}>
@@ -202,7 +248,7 @@ const TicketDetails = () => {
                     </Col>
                     <Col>
                       <Text strong>נציג</Text><br />
-                      <Text>{res.author}</Text>
+                      <Text>{usersMap[res.sender] || usersMap[res.createdBy] || usersMap[res.author] || res.sender || res.createdBy || res.author}</Text>
                     </Col>
                   </Row>
                 </Col>
@@ -212,7 +258,6 @@ const TicketDetails = () => {
         </div>
       )}
 
-      {/* טופס מענה */}
       <Card style={{ width: '100%', maxWidth: '700px' }}>
         <Divider orientation="left" style={{ borderColor: '#1677ff', color: '#1677ff' }}>הוסף תגובה</Divider>
         <Card type="inner" style={{ backgroundColor: '#fafafa' }}>
