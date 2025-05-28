@@ -25,15 +25,17 @@ const SignIn = () => {
 
   const password = watch('password');
 
-const onSubmit = async (data) => {
-  setIsLoading(true);
-  try {
-    const { confirm, ...cleanedValues } = data;
-    const response = await axios.post(`${baseUrl}/auth/register`, cleanedValues);
-
+  const onSubmit = async (data) => {
+    setIsLoading(true);
+    try {
+      const { confirm, ...cleanedValues } = data;
+      const response = await axios.post(`${baseUrl}/auth/register`, cleanedValues, {
+        withCredentials: true
+      });
+      debugger
       if (response.status === 200) {
         debugger
-        dispatch(updateUser({ name: data.userName, role: data.role ,token:response.data.token}))
+        dispatch(updateUser({ name: data.userName, role: data.role, token: response.data.token }))
         navigate("/HomePage");
       } else {
         throw new Error('ההרשמה נכשלה');
@@ -169,10 +171,10 @@ const onSubmit = async (data) => {
                   <Select
                     {...field}
                     placeholder="תפקיד"
-                    prefix={<TeamOutlined/>}
+                    prefix={<TeamOutlined />}
                     size="large"
                     style={{ textAlign: 'right' }}
-                    //allowClear
+                  //allowClear
                   >
                     <Option value="developer">מפתח</Option>
                     <Option value="support">תומך</Option>

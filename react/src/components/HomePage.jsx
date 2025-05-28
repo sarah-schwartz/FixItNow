@@ -58,6 +58,7 @@ const HomePage = () => {
         const decoded = parseJwt(token);
 
         try {
+            debugger
           const response = await axios.get("http://localhost:8080/User/getUserbyId/" + decoded.id);
           const user = response.data;
           dispatch(updateUser({ name: user.userName, role: user.role,token:token}));
