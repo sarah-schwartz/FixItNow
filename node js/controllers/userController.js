@@ -25,11 +25,14 @@ async function getUserbyId(req, res) {
         if (!user) {
             return res.status(404).send({ message: "User not found" });
         }
-        res.status(200).send(user);
+
+        res.status(200).send({
+            user,
+            token: req.token || null 
+        });
     } catch (err) {
-        res.status(500).send({ message: "Server error", error: err });
+        res.status(500).send({ message: "Server error", error: err.message });
     }
 }
-
 
 module.exports={getUserbyName,getUserbyId}
