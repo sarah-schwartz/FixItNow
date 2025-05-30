@@ -4,19 +4,12 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
+// const session = require("express-session");
+const passport = require("passport");
 
-// Load environment variables first
 dotenv.config();
 
-// Routers
-const responseRouter = require("./routers/responseRouter");
-const ticketTypeRouter = require("./routers/ticketTypeRouter");
-const userRouter = require("./routers/userRouter");
-const authRouter = require("./routers/authRouter");
-const sendEmail = require("./routers/emailRouter");
-const categoryRouter = require("./routers/categoryRouter");
-const ticketRouter = require("./routers/ticketRouter");
-
+require("./config/passport"); 
 const app = express();
 
 app.use(cors({
@@ -27,13 +20,28 @@ app.use(cors({
 }));
 
 app.use(cookieParser());
-
 app.use(express.json());
 app.use(bodyParser.json());
 
-mongoose.connect(process.env.DB_URL)
-  .then(() => console.log("Connected to MongoDB…"))
-  .catch(err => console.error("Connection failed…", err));
+// app.use(session({
+//   secret: process.env.SECRET_SESSION, 
+//   resave: false,
+//   saveUninitialized: false,
+//   cookie: { secure: true } 
+// }));
+
+// ✅ הפעלת Passport
+app.use(passport.initialize());
+// app.use(passport.session());
+
+// ✅ מסלולים
+const responseRouter = require("./routers/responseRouter");
+const ticketTypeRouter = require("./routers/ticketTypeRouter");
+const userRouter = require("./routers/userRouter");
+const authRouter = require("./routers/authRouter"); 
+const sendEmail = require("./routers/emailRouter");
+const categoryRouter = require("./routers/categoryRouter");
+const ticketRouter = require("./routers/ticketRouter");
 
 app.use("/api/user", userRouter);
 app.use("/response", responseRouter);
@@ -43,11 +51,11 @@ app.use("/Email", sendEmail);
 app.use("/Categories", categoryRouter);
 app.use("/Ticket", ticketRouter);
 
-// app.get("/", (req, res) => res.send("Server is running"));
-app.get("/", (req, res) => {
-  console.log("Cookies:", req.cookies);
-  res.send("Server is running");
-});
+app.get("/", (req, res) => res.send("Server is running"));
+
+mongoose.connect(process.env.DB_URL)
+  .then(() => console.log("Connected to MongoDB…"))
+  .catch(err => console.error("Connection failed…", err));
 
 const port = process.env.PORT || 8080;
 app.listen(port, () =>

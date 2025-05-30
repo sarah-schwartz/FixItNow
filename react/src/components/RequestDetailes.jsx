@@ -1,8 +1,8 @@
 import { useParams } from 'react-router-dom';
 import { Card, Tag, Typography, Layout, Divider, Row, Col, Input, Button, message } from 'antd';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Loader } from 'lucide-react';
+import axios from '../services/axiosInstance';
 
 const { Paragraph, Text, Title } = Typography;
 const { TextArea } = Input;
@@ -15,24 +15,22 @@ const TicketDetails = () => {
   const [loadingTicket, setLoadingTicket] = useState(true);
   const [error, setError] = useState(null);
   const [responses, setResponses] = useState([]);
-  const [usersMap, setUsersMap] = useState({}); // מפת ID למשתמשים
+  const [usersMap, setUsersMap] = useState({}); 
 
   useEffect(() => {
-    // פונקציה לשליפת שם משתמש לפי ID
     const fetchUserNameById = async (userId) => {
       if (!userId) return null;
-      // אם כבר קיים במפה נחזיר מיידית
       if (usersMap[userId]) return usersMap[userId];
       try {
         debugger
-        const res = await axios.get(`http://localhost:8080/api/user/getUserById/${userId}`);
+        const res = await axios.get(`/api/user/getUserById/${userId}`);
         console.log("user"+res.data+userId)
         const userName = res.data.user.userName || "שם לא נמצא";
         setUsersMap(prev => ({ ...prev, [userId]: userName }));
         return userName;
       } catch (err) {
         console.error("Error fetching user name for ID:", userId, err);
-        setUsersMap(prev => ({ ...prev, [userId]: userId })); // במקרה של שגיאה נשמור את ה-ID
+        setUsersMap(prev => ({ ...prev, [userId]: userId })); 
         return userId;
       }
     };
@@ -41,18 +39,16 @@ const TicketDetails = () => {
       try {
         setLoadingTicket(true);
         setError(null);
-        const res = await axios.get(`http://localhost:8080/Ticket/${id}`, {
+        const res = await axios.get(`/Ticket/${id}`, {
           headers: { "Content-Type": "application/json" },
         });
         setTicket(res.data);
-
-        // שליפת תגובות מלאות
         let fullResponses = [];
         if (res.data.responses && res.data.responses.length > 0) {
           fullResponses = await Promise.all(
             res.data.responses.map(async (responseId) => {
               try {
-                const responseRes = await axios.get(`http://localhost:8080/response/getResponseByID/${responseId}`);
+                const responseRes = await axios.get(`http:///response/getResponseByID/${responseId}`);
                 return responseRes.data;
               } catch (err) {
                 console.error(`Error fetching response ${responseId}:`, err);

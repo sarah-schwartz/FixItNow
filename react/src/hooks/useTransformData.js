@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axios from '../services/axiosInstance';
 
 const useTransformData = (ticket) => {
   const [data, setData] = useState(null);
@@ -15,14 +15,14 @@ const useTransformData = (ticket) => {
         setError(null);
 
         // שליפת שם המשתמש
-        const userRes = await axios.get("http://localhost:8080/auth/me", {
+        const userRes = await axios.get("/auth/me", {
           withCredentials: true,
           headers: { "Content-Type": "application/json" },
         });
 
         // שליפת שם הקטגוריה לפי ID
         const catRes = await axios.get(
-          `http://localhost:8080/Categories/getCategoryNameById/${ticket.type}`,
+          `http:///Categories/getCategoryNameById/${ticket.type}`,
           { headers: { "Content-Type": "application/json" } }
         );
 

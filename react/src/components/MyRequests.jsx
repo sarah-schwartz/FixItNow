@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Table, Tag, Space, Layout, Select, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -10,6 +9,8 @@ import {
   STATUS_LABELS_HE
 } from '../constants/constants';
 import Loader from './Loader';
+import axios from '../services/axiosInstance';
+
 
 const { Search } = Input;
 
@@ -90,26 +91,26 @@ const MyRequests = () => {
         setLoadingTickets(true);
         setErrorTickets(null);
 
-        const userRes = await axios.get("http://localhost:8080/auth/me", {
+        const userRes = await axios.get("/auth/me", {
           withCredentials: true,
           headers: { "Content-Type": "application/json" },
         });
 
         const res = await axios.get(
-          `http://localhost:8080/Ticket/my-tickets/${userRes.data.id}`,
+          `/Ticket/my-tickets/${userRes.data.id}`,
           { headers: { 'Content-Type': 'application/json' } }
         );
 
         const rawTickets = res.data;
 
         async function transformTicket(t) {
-          const userResponse = await axios.get('http://localhost:8080/auth/me', {
+          const userResponse = await axios.get('/auth/me', {
             withCredentials: true,
             headers: { 'Content-Type': 'application/json' },
           });
 
           const categoryResponse = await axios.get(
-            `http://localhost:8080/Categories/getCategoryNameById/${t.type}`,
+            `/Categories/getCategoryNameById/${t.type}`,
             { headers: { 'Content-Type': 'application/json' } }
           );
 

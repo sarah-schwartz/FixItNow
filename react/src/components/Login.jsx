@@ -3,11 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Form, Input, Checkbox, Button, Layout, Card, Space, Divider } from 'antd';
 import { UserOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons';
 import { useForm, Controller } from 'react-hook-form';
-import { useSelector, useDispatch } from 'react-redux';
-import axios from 'axios';
-const baseUrl = import.meta.env.VITE_API_BASE_URL;
-import { updateUser } from '../Store/UserSlice';
-
+import {  useDispatch } from 'react-redux';
+import axios from '../services/axiosInstance';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -22,29 +19,33 @@ const Login = () => {
   });
 
   const onSubmit = async (data) => {
-    setIsLoading(true);
-    try {
-      const response = await axios.post(
-  `${baseUrl}/auth/login`,
-  {
-    userName: data.username,
-    password: data.password,
-  },
-  {
-    withCredentials: true, // ← זה מה ששומר את הקוקי
+  setIsLoading(true);
+  try {
+    const response = await axios.post(
+      `/auth/login`,
+      {
+        userName: data.username,
+        password: data.password,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+
+    console.log("response.data", response.data);
+
+    
+    navigate("/HomePage");
+  } catch (err) {
+    console.error("שגיאה בשליחה לשרת:", err);
+  } finally {
+    setIsLoading(false);
   }
-);
-      console.log("response.data", response.data);
-      navigate("/HomePage");
-    } catch (err) {
-      console.error("שגיאה בשליחה לשרת:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  const handleGoogleLogin = () => {
-    window.location.href = `${baseUrl}/auth/google`;
-  };
+};
+
+  const handleGoogleLogin = async() => {
+    window.location.href = "http://localhost:8080/auth/google";
+}
 
   return (
     <Layout style={{

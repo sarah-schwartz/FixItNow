@@ -2,9 +2,8 @@ import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { Layout, Avatar, Dropdown, Button, Badge, theme } from 'antd';
 import { BellOutlined, UserOutlined, MenuOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import Loader from './Loader';
-
+import axios from '../services/axiosInstance';
 const Logo = lazy(() => import('./Logo'));
 const { Header: AntHeader } = Layout;
 const { useToken } = theme;
@@ -13,12 +12,11 @@ const Header = () => {
   const { token } = useToken();
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get(`${baseUrl}/auth/me`, {
+        const response = await axios.get(`/auth/me`, {
           withCredentials: true,
           headers: {
             'Content-Type': 'application/json',
@@ -43,6 +41,7 @@ const Header = () => {
     switch (e.key) {
       case 'logout':
         localStorage.clear();
+        axios.get("/auth/logout");
         navigate("/Login");
         break;
       case 'MyRequests':
@@ -88,7 +87,7 @@ const Header = () => {
         alignItems: 'center',
         gap: '16px'
       }}>
-        <Badge count={3} dot>
+        {/* <Badge count={3} dot>
           <Button
             type="text"
             icon={<BellOutlined style={{ color: 'white', fontSize: '18px' }} />}
@@ -103,7 +102,7 @@ const Header = () => {
               transition: 'all 0.3s ease'
             }}
           />
-        </Badge>
+        </Badge> */}
 
         <Dropdown
           menu={{ items: menuItems, onClick: handleMenuClick }}
@@ -121,9 +120,7 @@ const Header = () => {
             background: 'rgba(255, 255, 255, 0.1)',
             transition: 'all 0.3s ease',
           }}>
-            <span style={{ marginLeft: '8px', fontWeight: 500 }}>
-              שלום {username || 'אורח'}
-            </span>
+            
             <Avatar
               icon={<UserOutlined />}
               style={{
