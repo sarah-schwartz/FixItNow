@@ -22,9 +22,9 @@ async function getUserbyId(req, res) {
     try {
         const user = await User.findOne({ _id: req.params.id });
         if (!user) {
+            console.log("user not found")
             return res.status(404).send({ message: "User not found" });
         }
-
         res.status(200).send({
             user,
             token: req.token || null 

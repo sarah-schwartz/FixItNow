@@ -1,185 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Tag, Space, Layout, Select, Input } from 'antd';
+import React from 'react';
+import { Table, Layout } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import axios from '../services/axiosInstance'; 
-import {
-  getPriorityLabel,
-  getCategoryLabel,
-  getStatusLabel,
-  PRIORITY_LABELS_HE,
-  STATUS_LABELS_HE
-} from '../constants/constants';
-
-const { Search } = Input;
-
-const columns = [
-  {
-    title: 'שם עובד',
-    dataIndex: 'name',
-    key: 'name',
-    render: text => <a>{text}</a>,
-  },
-  {
-    title: 'קטגוריה',
-    dataIndex: 'category',
-    key: 'category',
-    render: (catKey) => getCategoryLabel(catKey)
-  },
-  {
-    title: 'תאריך',
-    dataIndex: 'date',
-    key: 'date',
-  },
-  {
-    title: 'דחיפות',
-    dataIndex: 'tags',
-    key: 'tags',
-    render: (priority) => {
-      const translated = getPriorityLabel(priority);
-      let color;
-      if (translated === 'נמוכה') color = 'geekblue';
-      else if (translated === 'בינונית') color = 'green';
-      else if (translated === 'גבוהה') color = 'volcano';
-      else color = 'default';
-      return <Tag color={color}>{translated}</Tag>;
-    },
-  },
-  {
-    title: 'סטטוס',
-    dataIndex: 'status',
-    key: 'status',
-    render: (status) => {
-      const translated = getStatusLabel(status);
-      let color;
-      if (translated === 'ממתין') color = 'orange';
-      else if (translated === 'בטיפול') color = 'blue';
-      else if (translated === 'הושלם') color = 'green';
-      else color = 'default';
-      return <Tag color={color}>{translated}</Tag>;
-    },
-  },
-];
-
-const urgencyOptions = Object.entries(PRIORITY_LABELS_HE).map(([value, label]) => ({
-  value,
-  label
-}));
-
-const statusOptions = Object.entries(STATUS_LABELS_HE).map(([value, label]) => ({
-  value,
-  label
-}));
+import { useTickets } from '../hooks/useTickets';
+import { useTicketsFilter } from '../hooks/useTicketsFilter';
+import { getTicketsColumns } from './TicketsTableConfig';
+import TicketsFilter from './TicketsFilter';
+import Loader from './Loader';
 
 const AllRequests = () => {
   const navigate = useNavigate();
-  const [tickets, setTickets] = useState([]);
-  const [loadingTickets, setLoadingTickets] = useState(true);
-  const [errorTickets, setErrorTickets] = useState(null);
+  const { tickets, loading, error } = useTickets('/Ticket', false);
+  const { filteredData, filterStates, filterSetters } = useTicketsFilter(tickets);
 
-  const [urgencyFilter, setUrgencyFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [searchText, setSearchText] = useState('');
-  const [categorySearch, setCategorySearch] = useState('');
-  const [dateSearch, setDateSearch] = useState('');
-
-  useEffect(() => {
-    const fetchAndTransformTickets = async () => {
-      try {
-        setLoadingTickets(true);
-        setErrorTickets(null);
-        const res = await axios.get("/Ticket");
-        const rawTickets = res.data;
-
-        async function transformTicket(t) {
-          const userResponse = await api.get(`/auth/user/${t.userId}`);
-          const categoryResponse = await api.get(`/Categories/getCategoryNameById/${t.type}`);
-
-          function formatDateOnly(isoString) {
-            const date = new Date(isoString);
-            return date.toLocaleDateString('he-IL');
-          }
-
-          return {
-            key: t._id,
-            _id: t._id,
-            name: userResponse.data.userName,
-            category: categoryResponse.data,
-            date: formatDateOnly(t.createdAt),
-            tags: t.priority,
-            status: t.status,
-          };
-        }
-
-        const transformedTickets = await Promise.all(rawTickets.map(t => transformTicket(t)));
-        setTickets(transformedTickets);
-      } catch (err) {
-        console.log(err)
-        setErrorTickets(err);
-      } finally {
-        setLoadingTickets(false);
-      }
-    };
-
-    fetchAndTransformTickets();
-  }, []);
-
-  const filteredData = tickets.filter((row) => {
-    const matchesUrgency = !urgencyFilter || row.tags === urgencyFilter;
-    const matchesStatus = !statusFilter || row.status === statusFilter;
-    const matchesSearch = row.name.includes(searchText);
-    const matchesCategory = !categorySearch || getCategoryLabel(row.category).includes(categorySearch);
-    const matchesDate = !dateSearch || row.date.includes(dateSearch);
-    return matchesUrgency && matchesStatus && matchesSearch && matchesCategory && matchesDate;
-  });
-
-  if (loadingTickets) return <div></div>;
-  if (errorTickets) return <div>שגיאה בטעינת הפניות: {errorTickets.message}</div>;
+  if (loading) return <div><Loader/></div>;
+  if (error) return <div>שגיאה בטעינת הפניות: {error.message}</div>;
 
   return (
     <Layout style={{ minHeight: '85vh' }}>
       <div style={{ padding: '60px' }}>
         <h2 style={{ textAlign: 'center', marginBottom: '24px' }}>כל הבקשות</h2>
 
-        <Space wrap style={{ marginBottom: '24px' }}>
-          <Select
-            placeholder="סנן לפי דחיפות"
-            style={{ width: 160 }}
-            value={urgencyFilter || undefined}
-            onChange={setUrgencyFilter}
-            options={urgencyOptions}
-            allowClear
-          />
-          <Select
-            placeholder="סנן לפי סטטוס"
-            style={{ width: 160 }}
-            value={statusFilter || undefined}
-            onChange={setStatusFilter}
-            options={statusOptions}
-            allowClear
-          />
-          <Input
-            placeholder="חיפוש לפי קטגוריה"
-            style={{ width: 160 }}
-            value={categorySearch}
-            onChange={(e) => setCategorySearch(e.target.value)}
-            allowClear
-          />
-          <Input
-            placeholder="חיפוש לפי תאריך"
-            style={{ width: 160 }}
-            value={dateSearch}
-            onChange={(e) => setDateSearch(e.target.value)}
-          />
-          <Search
-            placeholder="חיפוש לפי שם עובד"
-            onChange={(e) => setSearchText(e.target.value)}
-            allowClear
-            style={{ width: 200 }}
-          />
-        </Space>
+        <TicketsFilter 
+          filterStates={filterStates}
+          filterSetters={filterSetters}
+        />
 
         <Table
-          columns={columns}
+          columns={getTicketsColumns()}
           dataSource={filteredData.map((item, index) => ({ ...item, key: item._id || index }))}
           onRow={(record) => ({
             onClick: () => {
