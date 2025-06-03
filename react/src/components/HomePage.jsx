@@ -9,12 +9,12 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from '../services/axiosInstance';
+import useCurrentUser from '../hooks/useCurrentUser';
 
 const NavigationCard = lazy(() => import('./NavigationCard'));
 
 const { Content } = Layout;
 const { Title } = Typography;
-
 const cardData = [
   {
     icon: <ProfileOutlined />,
@@ -31,7 +31,9 @@ const cardData = [
     title: 'ממתין לאישור',
     link: '/AllRequests'
   },
+
 ];
+
 
 const parseJwt = (token) => {
   try {
@@ -56,7 +58,7 @@ const HomePage = () => {
         const decoded = parseJwt(token);
 
         try {
-            debugger
+          debugger
           const response = await axios.get("/User/getUserbyId/" + decoded.id);
         } catch (error) {
           console.error("Error fetching user:", error);
@@ -66,6 +68,17 @@ const HomePage = () => {
 
     fetchUser();
   }, [dispatch]);
+const { user: currentUser, loading: userLoading } = useCurrentUser();
+
+const cardsToShow = [...cardData];
+
+if (currentUser && currentUser.role === 'admin') {
+  cardsToShow.push({
+    icon: <ProfileOutlined />,
+    title: 'ניהול משתמשים',
+    link: '/admin/users',
+  });
+}
 
   return (
     <Layout
@@ -121,7 +134,7 @@ const HomePage = () => {
               alignItems: 'stretch',
             }}
           >
-            {cardData.map((item, index) => (
+            {cardsToShow.map((item, index) => (
               <Col
                 key={index}
                 xs={24}

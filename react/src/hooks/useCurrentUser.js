@@ -20,6 +20,6 @@ export default function useCurrentUser() {
 
     fetchUser();
   }, []);
-
+console.log(user)
   return { user, loading, error };
 }

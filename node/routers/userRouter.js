@@ -2,12 +2,11 @@ const express = require("express");
 const router = express.Router();
 const { authenticateJWT } = require("../middleware/auth");
 const { getUserbyName, getUserbyId,getAllUsers } = require("../controllers/userController");
-
+router.get("/getAllUsers", getAllUsers);
 router.get("/getUserByName/:userName", getUserbyName);
-router.get("/getUserById/:id", getUserbyId);
+router.get('/:id', getUserbyId); 
 router.post("/");
 
-router.get("/getAllUsers", getAllUsers);
 
 router.get("/me", authenticateJWT, (req, res) => {
   res.send({

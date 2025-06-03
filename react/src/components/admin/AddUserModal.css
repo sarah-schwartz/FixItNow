@@ -1,0 +1,133 @@
+.add-user-modal .ant-modal-content {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  padding: 0;
+}
+
+.add-user-header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  padding: 24px;
+  text-align: center;
+}
+
+.add-user-icon {
+  font-size: 32px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: inline-flex;
+}
+
+.add-user-title {
+  color: white !important;
+  margin: 0 0 8px 0 !important;
+}
+
+.add-user-subtitle {
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-size: 14px;
+}
+
+.add-user-divider {
+  margin: 0;
+}
+
+.add-user-form {
+  padding: 24px;
+}
+
+.form-row {
+  margin-bottom: 16px;
+  display: flex;
+  gap: 16px;
+}
+
+.form-row.two-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.form-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.custom-form-item {
+  margin-bottom: 0 !important;
+}
+
+.custom-input {
+  border-radius: var(--radius-md) !important;
+  padding: 12px !important;
+  height: auto !important;
+  transition: all var(--transition-speed) !important;
+}
+
+.custom-input:hover {
+  border-color: var(--primary-light) !important;
+}
+
+.custom-input:focus, .custom-input-focused {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+}
+
+.field-icon {
+  color: var(--text-tertiary);
+}
+
+.custom-select {
+  width: 100%;
+  border-radius: var(--radius-md) !important;
+}
+
+.custom-select .ant-select-selector {
+  padding: 8px 12px !important;
+  height: auto !important;
+  min-height: 44px !important;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.cancel-action-button {
+  min-width: 100px;
+}
+
+.submit-action-button {
+  min-width: 140px;
+  transition: all var(--transition-speed);
+}
+
+.submit-action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}
+
+.role-option-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+@media (max-width: 576px) {
+  .form-row.two-columns {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}

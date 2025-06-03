@@ -27,7 +27,7 @@ const TicketDetails = () => {
       if (usersMap[userId]) return usersMap[userId];
       try {
         debugger
-        const res = await axios.get(`/api/user/getUserById/${userId}`);
+        const res = await axios.get(`http://localhost:8080/api/user/${userId}`);
         console.log("user" + res.data + userId)
         const userName = res.data.user.userName || "שם לא נמצא";
         setUsersMap(prev => ({ ...prev, [userId]: userName }));
