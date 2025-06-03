@@ -1,3 +1,4 @@
+// components/ProtectedRoute.js
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { Spin, Layout } from 'antd';
@@ -8,11 +9,11 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 
   if (loading) {
     return (
-      <Layout style={{ 
-        minHeight: '100vh', 
+      <Layout style={{  
+        minHeight: '100vh',  
         display: 'flex',
-        justifyContent: 'center', 
-        alignItems: 'center' 
+        justifyContent: 'center',  
+        alignItems: 'center'  
       }}>
         <Spin size="large" />
       </Layout>
@@ -23,9 +24,15 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
     return <Navigate to="/login" replace />;
   }
 
-  // בדיקת הרשאת תפקיד ספציפי
-  if (requiredRole && user.role !== requiredRole) {
-    return <Navigate to="/HomePage" replace />;
+  // בדיקת הרשאת תפקיד ספציפי או רשימת תפקידים
+  if (requiredRole) {
+    const hasRequiredRole = Array.isArray(requiredRole) 
+      ? requiredRole.includes(user.role) 
+      : user.role === requiredRole;
+      
+    if (!hasRequiredRole) {
+      return <Navigate to="/Login" replace />; 
+    }
   }
 
   return children;
