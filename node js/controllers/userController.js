@@ -34,11 +34,14 @@ async function getUserbyId(req, res) {
     }
 }
 async function getAllUsers(req, res) {
+    console.log("in")
     try {
-        const users = await User.find().select('_id userName email role');
-        res.status(200).json(users);
+        const users = await User.find();
+        console.log(users)
+        res.status(200).send(users);
     } catch (error) {
-        res.status(500).json({ message: "Failed to fetch users", error });
+        console.log("err")
+        res.status(500).send({ message: "Failed to fetch users", error });
     }
 }
 
