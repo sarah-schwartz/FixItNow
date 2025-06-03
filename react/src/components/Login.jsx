@@ -45,9 +45,9 @@ const Login = () => {
   }
 };
 
-  const handleGoogleLogin = () => {
-    window.location.href = `${baseUrl}/auth/google`;
-  };
+  const handleGoogleLogin = async() => {
+    window.location.href = "http://localhost:8080/auth/google";
+}
 
   return (
     <Layout style={{

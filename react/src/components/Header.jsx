@@ -12,12 +12,11 @@ const Header = () => {
   const { token } = useToken();
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get(`${baseUrl}/auth/me`, {
+        const response = await axios.get(`/auth/me`, {
           withCredentials: true,
           headers: {
             'Content-Type': 'application/json',
@@ -121,9 +120,7 @@ const Header = () => {
             background: 'rgba(255, 255, 255, 0.1)',
             transition: 'all 0.3s ease',
           }}>
-            <span style={{ marginLeft: '8px', fontWeight: 500 }}>
-              שלום {username || 'אורח'}
-            </span>
+            
             <Avatar
               icon={<UserOutlined />}
               style={{

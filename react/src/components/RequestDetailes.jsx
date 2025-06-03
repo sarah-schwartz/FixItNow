@@ -3,6 +3,7 @@ import { Card, Tag, Typography, Layout, Divider, Row, Col, Input, Button, messag
 import { useState, useEffect } from 'react';
 import { Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
+import { Loader } from 'lucide-react';
 import axios from '../services/axiosInstance';
 
 const { Paragraph, Text, Title } = Typography;
@@ -16,8 +17,9 @@ const TicketDetails = () => {
   const [loadingTicket, setLoadingTicket] = useState(true);
   const [error, setError] = useState(null);
   const [responses, setResponses] = useState([]);
-  const [usersMap, setUsersMap] = useState({}); 
-  const [currentUser,setCurrentUser]=useState({})
+  const [usersMap, setUsersMap] = useState({});
+  const [currentUser, setCurrentUser] = useState({})
+  const [category, setCategory] = useState(null);
 
   useEffect(() => {
     const fetchUserNameById = async (userId) => {
@@ -26,13 +28,13 @@ const TicketDetails = () => {
       try {
         debugger
         const res = await axios.get(`/api/user/getUserById/${userId}`);
-        console.log("user"+res.data+userId)
+        console.log("user" + res.data + userId)
         const userName = res.data.user.userName || "שם לא נמצא";
         setUsersMap(prev => ({ ...prev, [userId]: userName }));
         return userName;
       } catch (err) {
         console.error("Error fetching user name for ID:", userId, err);
-        setUsersMap(prev => ({ ...prev, [userId]: userId })); 
+        setUsersMap(prev => ({ ...prev, [userId]: userId }));
         return userId;
       }
     };
@@ -41,19 +43,19 @@ const TicketDetails = () => {
       try {
         setLoading(true);
         console.log('Fetching profile data...');
-        
+
         const response = await axios.get('/auth/me', {
-          withCredentials: true, 
+          withCredentials: true,
           headers: {
             'Content-Type': 'application/json',
           }
         });
-        
+
         console.log('Profile response:', response);
         setCurrentUser(response.data)
       } catch (err) {
         console.error("שגיאה בשליפת נתוני פרופיל:", err);
-        
+
         if (err.response?.status === 401) {
           setError('אנא התחבר מחדש למערכת');
           // אפשר להפנות לדף התחברות
@@ -65,7 +67,7 @@ const TicketDetails = () => {
         setLoading(false);
       }
     };
-    
+
 
     const fetchTicket = async () => {
       try {
@@ -89,6 +91,7 @@ const TicketDetails = () => {
             })
           );
           fullResponses = fullResponses.filter(r => r !== null);
+          console.log(fullResponses)
           setResponses(fullResponses);
         } else {
           setResponses([]);
@@ -122,15 +125,16 @@ const TicketDetails = () => {
   }, [id]);
 
   const markAsHandled = async () => {
-  try {
-    await axios.put(`http://localhost:8080/Ticket/setStatus/${ticket._id}`,{status:closed});
-    setTicket(prev => ({ ...prev, status: 'closed' }));
-    message.success('הפנייה סומנה כטופלה');
-  } catch (err) {
-    console.error("שגיאה בעדכון סטטוס:", err);
-    message.error('שגיאה בסימון הפנייה כטופלה');
-  }
-};
+    debugger
+    try {
+      await axios.put(`http://localhost:8080/Ticket/setStatus/${ticket._id}`, { status: "closed" });
+      setTicket(prev => ({ ...prev, status: 'closed' }));
+      message.success('הפנייה סומנה כטופלה');
+    } catch (err) {
+      console.error("שגיאה בעדכון סטטוס:", err);
+      message.error('שגיאה בסימון הפנייה כטופלה');
+    }
+  };
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -164,67 +168,82 @@ const TicketDetails = () => {
     setLoading(true);
 
     setTimeout(async () => {
-  try {
-    console.log(currentUser);
-    
-    const newResponse = {
-      content: reply,
-      createdAt: new Date().toISOString(),
-      author: currentUser.userName
-    };
-    console.log(ticket._id,currentUser,newResponse.content)
+      try {
+        console.log(currentUser);
 
-    const res = await axios.post('http://localhost:8080/response/addResponseToTicket', {
-      ticketId: ticket._id,
-      createdBy: currentUser.id, // שימי לב: כאן צריך לשלוח את ה־ObjectId של המשתמש, לא את השם
-      content: newResponse.content
-    });
+        const newResponse = {
+          content: reply,
+          createdAt: new Date().toISOString(),
+          author: currentUser.userName
+        };
+        console.log(ticket._id, currentUser, newResponse.content)
 
-    // את התגובה שחזרה מהשרת את יכולה להוסיף לרשימה:
-    setResponses([...responses, newResponse]);
-      setReply('');
-      if(currentUser.id==ticket._id){
-        await axios.put(`http://localhost:8080/Ticket/setStatus/${ticket._id}`,{status:"waiting"});
-        setTicket(prev => ({ ...prev, status: 'waiting' }));
+        const res = await axios.post('http://localhost:8080/response/addResponseToTicket', {
+          ticketId: ticket._id,
+          createdBy: currentUser.id, // שימי לב: כאן צריך לשלוח את ה־ObjectId של המשתמש, לא את השם
+          content: newResponse.content
+        });
+
+        // את התגובה שחזרה מהשרת את יכולה להוסיף לרשימה:
+        setResponses([...responses, newResponse]);
+        setReply('');
+        if (currentUser.id == ticket._id) {
+          await axios.put(`http://localhost:8080/Ticket/setStatus/${ticket._id}`, { status: "waiting" });
+          setTicket(prev => ({ ...prev, status: 'waiting' }));
+        }
+        else {
+          await axios.put(`http://localhost:8080/Ticket/setStatus/${ticket._id}`, { status: "inProgress" });
+          setTicket(prev => ({ ...prev, status: 'inProgress' }));
+        }
+        setLoading(false);
+        message.success('המענה נשלח בהצלחה');
+      } catch (err) {
+        console.error('שגיאה בשליחת מענה:', err);
+        message.error('שגיאה בשליחת מענה');
+        setLoading(false);
       }
-    else{
-      await axios.put(`http://localhost:8080/Ticket/setStatus/${ticket._id}`,{status: "inProgress"});
-      setTicket(prev => ({ ...prev, status: 'inProgress' }));
-    }
-      setLoading(false);
-      message.success('המענה נשלח בהצלחה');
-  } catch (err) {
-    console.error('שגיאה בשליחת מענה:', err);
-    message.error('שגיאה בשליחת מענה');
-    setLoading(false);
-  }
-}, 1000);
+    }, 1000);
 
   };
   const getFieldValue = (fieldName) => {
     return ticket.fieldValues?.find(f => f.fieldName === fieldName)?.value || '---';
   };
+  useEffect(() => {
+    const fetchCategory = async () => {
+      if (ticket && ticket.fieldValues && ticket.fieldValues.length > 0) {
+        try {
+          debugger
+          const res = await axios.get(`http://localhost:8080/Categories/getCategoryById/${ticket.fieldValues[0].value}`);
+          setCategory(res.data);
+        } catch (err) {
+          console.error('שגיאה בשליפת קטגוריה:', err);
+        }
+      }
+    };
+    //const category = categories.find(c => c.name === 'folder_access');
 
-  const categories = [
-    {
-      name: "folder_access",
-      fields: [
-        { fieldName: "path", labelKey: "נתיב תיקייה" },
-        { fieldName: "permission", labelKey: "הרשאה" },
-        { fieldName: "folderName", labelKey: "שם תיקייה" }
-      ]
-    }
-  ];
+    fetchCategory();
+  }, [ticket]);
 
-  const category = categories.find(c => c.name === 'folder_access');
+  // const categories = [
+  //   {
+  //     name: "folder_access",
+  //     fields: [
+  //       { fieldName: "path", labelKey: "נתיב תיקייה" },
+  //       { fieldName: "permission", labelKey: "הרשאה" },
+  //       { fieldName: "folderName", labelKey: "שם תיקייה" }
+  //     ]
+  //   }
+  // ];
 
-const antIcon = <LoadingOutlined style={{ fontSize: 36 }} spin />;
 
-if (loadingTicket) return (
-  <div style={{ textAlign: 'center', padding: '200px 0' }}>
-    <Spin indicator={antIcon} tip="טוען פנייה..." size="large" />
-  </div>
-);
+  const antIcon = <LoadingOutlined style={{ fontSize: 36 }} spin />;
+
+  if (loadingTicket) return (
+    <div style={{ textAlign: 'center', padding: '200px 0' }}>
+      <Spin indicator={antIcon} tip="טוען פנייה..." size="large" />
+    </div>
+  );
 
   if (error || !ticket) return <Text>לא נמצאה פנייה</Text>;
 
@@ -278,15 +297,16 @@ if (loadingTicket) return (
         <Card type="inner" style={{ backgroundColor: '#fafafa', marginBottom: 24 }}>
           <Paragraph style={{ marginBottom: 0 }}>{ticket.description}</Paragraph>
         </Card>
-{category && (
+        {category && (
           <>
             <Divider orientation="left" style={{ borderColor: '#1677ff', color: '#1677ff' }}>פרטי קטגוריה</Divider>
             <div style={{ textAlign: 'right', paddingRight: 8 }}>
               {category.fields.map((field) => (
-                <div key={field.fieldName} style={{ marginBottom: 20 }}>
-                  <Text strong>{field.labelKey}:</Text> {getFieldValue(field.fieldName)}
-                </div>
-              ))}
+  <div key={field.fieldName} style={{ display: 'flex', marginBottom: 12 }}>
+    <div style={{ fontWeight: 'bold', minWidth: 120 }}>{field.labelKey}:</div>
+    <div>{getFieldValue(field.fieldName)}</div>
+  </div>
+))}
             </div>
           </>
         )}
@@ -331,29 +351,29 @@ if (loadingTicket) return (
       )}
 
       {ticket.status !== 'closed' && (
-  <Card style={{ width: '100%', maxWidth: '700px', marginTop: 24 }}>
-    <Divider orientation="left" style={{ borderColor: '#1677ff', color: '#1677ff' }}>הוסף תגובה</Divider>
-    <Card type="inner" style={{ backgroundColor: '#fafafa' }}>
-      <TextArea
-        value={reply}
-        onChange={(e) => setReply(e.target.value)}
-        rows={4}
-        placeholder="כתוב כאן את תגובתך..."
-        style={{ marginBottom: 12 }}
-      />
-      <Button type="primary" onClick={handleReply} loading={loading}>
-        שלח מענה
-      </Button>
-    </Card>
-  </Card>
-)}
-{ticket.status !== 'closed' && (
-  <div style={{ marginTop: 24, textAlign: 'center' }}>
-    <Button type="default" danger onClick={markAsHandled}>
-      סמן כטופלה
-    </Button>
-  </div>
-)}
+        <Card style={{ width: '100%', maxWidth: '700px', marginTop: 24 }}>
+          <Divider orientation="left" style={{ borderColor: '#1677ff', color: '#1677ff' }}>הוסף תגובה</Divider>
+          <Card type="inner" style={{ backgroundColor: '#fafafa' }}>
+            <TextArea
+              value={reply}
+              onChange={(e) => setReply(e.target.value)}
+              rows={4}
+              placeholder="כתוב כאן את תגובתך..."
+              style={{ marginBottom: 12 }}
+            />
+            <Button type="primary" onClick={handleReply} loading={loading}>
+              שלח מענה
+            </Button>
+          </Card>
+        </Card>
+      )}
+      {ticket.status !== 'closed' && (
+        <div style={{ marginTop: 24, textAlign: 'center' }}>
+          <Button type="default" danger onClick={markAsHandled}>
+            סמן כטופלה
+          </Button>
+        </div>
+      )}
     </Layout>
   );
 };

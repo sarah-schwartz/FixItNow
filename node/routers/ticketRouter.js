@@ -14,9 +14,9 @@ const {verifyToken} = require('../middleware/auth');
 
 router.post('/', verifyToken, addTicket);
 
-router.get('/my-tickets/:id', getAllTicketsByUserID);
+router.get('/my-tickets/:id',verifyToken, getAllTicketsByUserID);
 
-router.get('/:id', getTicketByID);
+router.get('/:id',verifyToken, getTicketByID);
 
 router.get('/', verifyToken, getAllOpenTickets);
 

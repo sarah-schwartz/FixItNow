@@ -4,7 +4,6 @@ const { requiredPaths } = require('./Field');
 const UserSchema = mongoose.Schema({
     userName:{type: String, required: true,minLength:2},
     password: {type: String,minLength:6,required: function() {
-          // אם יש googleId, הסיסמה לא נדרשת
           return !this.googleId;
         },
       },

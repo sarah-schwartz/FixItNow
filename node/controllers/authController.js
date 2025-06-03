@@ -36,14 +36,12 @@ const register = async (req, res) => {
         { expiresIn: "1d" }
       );
 
-      // Set cookie with proper options
-      res.cookie("token", token, {// זמנית לבדיקה
-        httpOnly: false,
-        secure: false, // true only in production
-        sameSite: "none", // changed from "strict" to "lax" for cross-origin requests
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
-        path: '/',
-        domain: 'localhost' // ensure cookie is available site-wide
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: "lax",
+        maxAge: 24 * 60 * 60 * 1000,
+        path: '/' // ensure cookie is available site-wide
       });
 
       console.log("Token created and cookie set:", token);

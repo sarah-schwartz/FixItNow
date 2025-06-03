@@ -21,4 +21,16 @@ const getCategoryNameById = async (req, res) => {
   }
 }
 
-module.exports = { getAllCategories ,getCategoryNameById};
+const getCategoryById = async (req, res) => {
+  try {
+    const category = await Category.findOne({ _id: req.params.id })
+    if (!category) {
+      return res.status(404).send({ message: "Category not found" });
+    }
+    res.status(200).send(category)
+  } catch (err) {
+    res.status(500).send({ message: "Server error", error: err });
+  }
+}
+
+module.exports = { getAllCategories ,getCategoryNameById,getCategoryById};

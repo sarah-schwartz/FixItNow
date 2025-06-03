@@ -7,7 +7,7 @@ const { Title } = Typography;
 const { Content } = Layout;
 
 const ProfilePage = () => {
-  console.log('Current cookies:', document.cookie);
+  console.log(':', document.cookie);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('');
@@ -51,6 +51,14 @@ const ProfilePage = () => {
     fetchProfile();
   }, []);
 
+  useEffect(() => {
+  const originalOverflow = document.body.style.overflow;
+  document.body.style.overflow = 'hidden';
+  return () => {
+    document.body.style.overflow = originalOverflow;
+  };
+}, []);
+
   if (loading) {
     return (
       <Layout style={{ minHeight: '100vh', background: '#f0f2f5' }}>
@@ -83,6 +91,7 @@ const ProfilePage = () => {
           maxWidth: '800px',
           margin: 'auto',
           padding: '40px 24px',
+          height: '100vh'
         }}
       >
         <Card
