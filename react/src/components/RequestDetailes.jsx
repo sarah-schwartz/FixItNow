@@ -1,8 +1,9 @@
 import { useParams } from 'react-router-dom';
 import { Card, Tag, Typography, Layout, Divider, Row, Col, Input, Button, message } from 'antd';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Loader } from 'lucide-react';
+import { Spin } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
+import axios from '../services/axiosInstance';
 
 const { Paragraph, Text, Title } = Typography;
 const { TextArea } = Input;
@@ -15,38 +16,65 @@ const TicketDetails = () => {
   const [loadingTicket, setLoadingTicket] = useState(true);
   const [error, setError] = useState(null);
   const [responses, setResponses] = useState([]);
-  const [usersMap, setUsersMap] = useState({}); // מפת ID למשתמשים
+  const [usersMap, setUsersMap] = useState({}); 
+  const [currentUser,setCurrentUser]=useState({})
 
   useEffect(() => {
-    // פונקציה לשליפת שם משתמש לפי ID
     const fetchUserNameById = async (userId) => {
       if (!userId) return null;
-      // אם כבר קיים במפה נחזיר מיידית
       if (usersMap[userId]) return usersMap[userId];
       try {
         debugger
-        const res = await axios.get(`http://localhost:8080/api/user/getUserById/${userId}`);
+        const res = await axios.get(`/api/user/getUserById/${userId}`);
         console.log("user"+res.data+userId)
         const userName = res.data.user.userName || "שם לא נמצא";
         setUsersMap(prev => ({ ...prev, [userId]: userName }));
         return userName;
       } catch (err) {
         console.error("Error fetching user name for ID:", userId, err);
-        setUsersMap(prev => ({ ...prev, [userId]: userId })); // במקרה של שגיאה נשמור את ה-ID
+        setUsersMap(prev => ({ ...prev, [userId]: userId })); 
         return userId;
       }
     };
+
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        console.log('Fetching profile data...');
+        
+        const response = await axios.get('/auth/me', {
+          withCredentials: true, 
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        console.log('Profile response:', response);
+        setCurrentUser(response.data)
+      } catch (err) {
+        console.error("שגיאה בשליפת נתוני פרופיל:", err);
+        
+        if (err.response?.status === 401) {
+          setError('אנא התחבר מחדש למערכת');
+          // אפשר להפנות לדף התחברות
+          // window.location.href = '/login';
+        } else {
+          setError('שגיאה בטעינת הפרופיל');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    
 
     const fetchTicket = async () => {
       try {
         setLoadingTicket(true);
         setError(null);
-        const res = await axios.get(`http://localhost:8080/Ticket/${id}`, {
+        const res = await axios.get(`/Ticket/${id}`, {
           headers: { "Content-Type": "application/json" },
         });
         setTicket(res.data);
-
-        // שליפת תגובות מלאות
         let fullResponses = [];
         if (res.data.responses && res.data.responses.length > 0) {
           fullResponses = await Promise.all(
@@ -89,9 +117,20 @@ const TicketDetails = () => {
         setLoadingTicket(false);
       }
     };
-
+    fetchProfile();
     fetchTicket();
   }, [id]);
+
+  const markAsHandled = async () => {
+  try {
+    await axios.put(`http://localhost:8080/Ticket/setStatus/${ticket._id}`,{status:closed});
+    setTicket(prev => ({ ...prev, status: 'closed' }));
+    message.success('הפנייה סומנה כטופלה');
+  } catch (err) {
+    console.error("שגיאה בעדכון סטטוס:", err);
+    message.error('שגיאה בסימון הפנייה כטופלה');
+  }
+};
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -101,7 +140,7 @@ const TicketDetails = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'waiting': return 'gold';
-      case 'in_progress': return 'blue';
+      case 'inProgress': return 'blue';
       case 'closed': return 'green';
       default: return 'default';
     }
@@ -124,18 +163,43 @@ const TicketDetails = () => {
 
     setLoading(true);
 
-    setTimeout(() => {
-      const newResponse = {
-        content: reply,
-        createdAt: new Date().toISOString(),
-        author: "חי"
-      };
+    setTimeout(async () => {
+  try {
+    console.log(currentUser);
+    
+    const newResponse = {
+      content: reply,
+      createdAt: new Date().toISOString(),
+      author: currentUser.userName
+    };
+    console.log(ticket._id,currentUser,newResponse.content)
 
-      setResponses([...responses, newResponse]);
+    const res = await axios.post('http://localhost:8080/response/addResponseToTicket', {
+      ticketId: ticket._id,
+      createdBy: currentUser.id, // שימי לב: כאן צריך לשלוח את ה־ObjectId של המשתמש, לא את השם
+      content: newResponse.content
+    });
+
+    // את התגובה שחזרה מהשרת את יכולה להוסיף לרשימה:
+    setResponses([...responses, newResponse]);
       setReply('');
+      if(currentUser.id==ticket._id){
+        await axios.put(`http://localhost:8080/Ticket/setStatus/${ticket._id}`,{status:"waiting"});
+        setTicket(prev => ({ ...prev, status: 'waiting' }));
+      }
+    else{
+      await axios.put(`http://localhost:8080/Ticket/setStatus/${ticket._id}`,{status: "inProgress"});
+      setTicket(prev => ({ ...prev, status: 'inProgress' }));
+    }
       setLoading(false);
       message.success('המענה נשלח בהצלחה');
-    }, 1000);
+  } catch (err) {
+    console.error('שגיאה בשליחת מענה:', err);
+    message.error('שגיאה בשליחת מענה');
+    setLoading(false);
+  }
+}, 1000);
+
   };
   const getFieldValue = (fieldName) => {
     return ticket.fieldValues?.find(f => f.fieldName === fieldName)?.value || '---';
@@ -154,7 +218,14 @@ const TicketDetails = () => {
 
   const category = categories.find(c => c.name === 'folder_access');
 
-  if (loadingTicket) return <Text><Loader/></Text>;
+const antIcon = <LoadingOutlined style={{ fontSize: 36 }} spin />;
+
+if (loadingTicket) return (
+  <div style={{ textAlign: 'center', padding: '200px 0' }}>
+    <Spin indicator={antIcon} tip="טוען פנייה..." size="large" />
+  </div>
+);
+
   if (error || !ticket) return <Text>לא נמצאה פנייה</Text>;
 
   return (
@@ -259,21 +330,30 @@ const TicketDetails = () => {
         </div>
       )}
 
-      <Card style={{ width: '100%', maxWidth: '700px' }}>
-        <Divider orientation="left" style={{ borderColor: '#1677ff', color: '#1677ff' }}>הוסף תגובה</Divider>
-        <Card type="inner" style={{ backgroundColor: '#fafafa' }}>
-          <TextArea
-            value={reply}
-            onChange={(e) => setReply(e.target.value)}
-            rows={4}
-            placeholder="כתוב כאן את תגובתך..."
-            style={{ marginBottom: 12 }}
-          />
-          <Button type="primary" onClick={handleReply} loading={loading}>
-            שלח מענה
-          </Button>
-        </Card>
-      </Card>
+      {ticket.status !== 'closed' && (
+  <Card style={{ width: '100%', maxWidth: '700px', marginTop: 24 }}>
+    <Divider orientation="left" style={{ borderColor: '#1677ff', color: '#1677ff' }}>הוסף תגובה</Divider>
+    <Card type="inner" style={{ backgroundColor: '#fafafa' }}>
+      <TextArea
+        value={reply}
+        onChange={(e) => setReply(e.target.value)}
+        rows={4}
+        placeholder="כתוב כאן את תגובתך..."
+        style={{ marginBottom: 12 }}
+      />
+      <Button type="primary" onClick={handleReply} loading={loading}>
+        שלח מענה
+      </Button>
+    </Card>
+  </Card>
+)}
+{ticket.status !== 'closed' && (
+  <div style={{ marginTop: 24, textAlign: 'center' }}>
+    <Button type="default" danger onClick={markAsHandled}>
+      סמן כטופלה
+    </Button>
+  </div>
+)}
     </Layout>
   );
 };

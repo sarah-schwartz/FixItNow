@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Tag, Space, Layout, Select, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/axiosInstance'; 
+import axios from '../services/axiosInstance'; 
 import Loader from './Loader'
 import {
   getPriorityLabel,
@@ -88,8 +88,7 @@ const AllRequests = () => {
       try {
         setLoadingTickets(true);
         setErrorTickets(null);
-
-        const res = await api.get('/Ticket');
+        const res = await axios.get("/Ticket");
         const rawTickets = res.data;
 
         async function transformTicket(t) {
@@ -115,6 +114,7 @@ const AllRequests = () => {
         const transformedTickets = await Promise.all(rawTickets.map(t => transformTicket(t)));
         setTickets(transformedTickets);
       } catch (err) {
+        console.log(err)
         setErrorTickets(err);
       } finally {
         setLoadingTickets(false);
@@ -184,7 +184,7 @@ const AllRequests = () => {
           dataSource={filteredData.map((item, index) => ({ ...item, key: item._id || index }))}
           onRow={(record) => ({
             onClick: () => {
-              navigate(`/MyRequests/${record._id}`);
+              navigate(`/AllRequests/${record._id}`);
             },
             style: { cursor: 'pointer' },
           })}

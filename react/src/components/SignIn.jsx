@@ -4,10 +4,8 @@ import { Form, Input, Select, Button, Layout, Card, Divider } from 'antd';
 import { UserOutlined, LockOutlined, GoogleOutlined, MailOutlined, RollbackOutlined, SelectOutlined, TeamOutlined } from '@ant-design/icons';
 import { useForm, Controller } from 'react-hook-form';
 import { useSelector, useDispatch } from 'react-redux';
-import axios from 'axios';
-const baseUrl = import.meta.env.VITE_API_BASE_URL;
+import axios from '../services/axiosInstance';
 const { Option } = Select;
-import { updateUser } from '../Store/UserSlice';
 
 const SignIn = () => {
 
@@ -29,13 +27,17 @@ const SignIn = () => {
     setIsLoading(true);
     try {
       const { confirm, ...cleanedValues } = data;
-      const response = await axios.post(`${baseUrl}/auth/register`, cleanedValues, {
+      const response = await axios.post(`/auth/register`, cleanedValues, {
         withCredentials: true
       });
       debugger
       if (response.status === 200) {
-        debugger
-        dispatch(updateUser({ name: data.userName, role: data.role, token: response.data.token }))
+    await axios.post("/Email/send-email", {
+      to:`${data.email}` ,
+      subject: "משתמש התחבר למערכת",
+      text: `המשתמש ${data.userName} התחבר בהצלחה.`,
+    });
+
         navigate("/HomePage");
       } else {
         throw new Error('ההרשמה נכשלה');
@@ -48,7 +50,7 @@ const SignIn = () => {
   };
   const handleGoogleLogin = () => {
     debugger
-    window.location.href = `${baseUrl}/auth/google`;
+    window.location.href =  "http://localhost:8080/auth/google";
   };
 
   return (

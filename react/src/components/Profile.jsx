@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Avatar, Typography, Descriptions, Layout, Alert, Spin } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
-import axios from 'axios';
+import axios from '../services/axiosInstance';
 
 const { Title } = Typography;
 const { Content } = Layout;
@@ -20,8 +20,8 @@ const ProfilePage = () => {
         setLoading(true);
         console.log('Fetching profile data...');
         
-        const response = await axios.get('http://localhost:8080/auth/me', {
-          withCredentials: true, // חשוב! זה מבטיח שהקוקיז יישלח
+        const response = await axios.get('/auth/me', {
+          withCredentials: true, 
           headers: {
             'Content-Type': 'application/json',
           }

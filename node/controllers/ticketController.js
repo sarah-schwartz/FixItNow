@@ -1,4 +1,4 @@
-const Ticket = require('../models/Ticket'); 
+const Ticket = require('../models/Ticket');
 async function addTicket(req, res) {
     try {
         console.log("New request:", req.body);
@@ -13,7 +13,7 @@ async function addTicket(req, res) {
             fieldValues
         } = req.body;
 
-        if (!title || !createdBy || !type || !assignedTo ||  !priority) {
+        if (!title || !createdBy || !type || !assignedTo || !priority) {
             return res.status(400).json({
                 message: 'Missing required fields: title, createdBy, type, assignedTo, category or priority'
             });
@@ -43,11 +43,11 @@ async function getAllTicketsByUserID(req, res) {
     try {
         const { id } = req.params;
         //const user = req.user;
-        if (!id ) {
+        if (!id) {
             return res.status(400).json({ message: 'Invalid user info' });
         }
 
-        const tickets = await Ticket.find({ createdBy: id});
+        const tickets = await Ticket.find({ createdBy: id });
         res.status(200).json(tickets);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -78,9 +78,32 @@ async function getAllOpenTickets(req, res) {
     }
 }
 
+async function setStatus(req, res) {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        console.log("fhtrth "+id+" "+status)
+
+        const ticket = await Ticket.findById(id);
+        if (!ticket) {
+            return res.status(404).send("Ticket not found");
+        }
+
+        ticket.status = status;
+        await ticket.save();
+
+        res.send("Status updated");
+    } catch (err) {
+        console.error("Error updating status:", err);
+        res.status(500).send("Server error");
+    }
+}
+
+
 module.exports = {
     addTicket,
     getAllTicketsByUserID,
     getTicketByID,
-    getAllOpenTickets
+    getAllOpenTickets,
+    setStatus
 };

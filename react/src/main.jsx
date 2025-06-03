@@ -37,12 +37,10 @@ import App from './App.jsx';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import { configureStore } from '@reduxjs/toolkit';
-import UserSlice from './Store/UserSlice'
 import RequestSlice from './Store/RequestSlice';
 
 export const store = configureStore({
   reducer: {
-    UserSlice,
     newRequest: RequestSlice,
   },
   // middleware: (getDefaultMiddleware) =>

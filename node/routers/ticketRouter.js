@@ -5,7 +5,8 @@ const {
     addTicket,
     getAllTicketsByUserID,
     getTicketByID,
-    getAllOpenTickets
+    getAllOpenTickets,
+    setStatus
 } = require('../controllers/ticketController');
 
 const {verifyToken} = require('../middleware/auth');
@@ -18,5 +19,7 @@ router.get('/my-tickets/:id', getAllTicketsByUserID);
 router.get('/:id', getTicketByID);
 
 router.get('/', verifyToken, getAllOpenTickets);
+
+router.put('/setStatus/:id',setStatus)
 
 module.exports = router;

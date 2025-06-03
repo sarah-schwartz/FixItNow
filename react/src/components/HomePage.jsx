@@ -8,8 +8,7 @@ import {
   ClockCircleOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import axios from "axios";
-import { updateUser } from '../Store/UserSlice';
+import axios from '../services/axiosInstance';
 
 const NavigationCard = lazy(() => import('./NavigationCard'));
 
@@ -58,9 +57,7 @@ const HomePage = () => {
 
         try {
             debugger
-          const response = await axios.get("http://localhost:8080/User/getUserbyId/" + decoded.id);
-          const user = response.data;
-          dispatch(updateUser({ name: user.userName, role: user.role,token:token}));
+          const response = await axios.get("/User/getUserbyId/" + decoded.id);
         } catch (error) {
           console.error("Error fetching user:", error);
         }

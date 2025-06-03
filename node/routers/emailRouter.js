@@ -5,6 +5,7 @@ const { sendEmail } = require('../services/emailService');
 const nodemailer = require('nodemailer');
 
 router.post('/send-email', async (req, res) => {
+  console.log("send")
   const { to, subject, text } = req.body;
   try {
     await sendEmail(to, subject, text);
