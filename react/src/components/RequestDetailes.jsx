@@ -5,6 +5,7 @@ import { Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 import { Loader } from 'lucide-react';
 import axios from '../services/axiosInstance';
+import {getFieldLabel} from "../constants/constants"
 
 const { Paragraph, Text, Title } = Typography;
 const { TextArea } = Input;
@@ -302,11 +303,11 @@ const TicketDetails = () => {
             <Divider orientation="left" style={{ borderColor: '#1677ff', color: '#1677ff' }}>פרטי קטגוריה</Divider>
             <div style={{ textAlign: 'right', paddingRight: 8 }}>
               {category.fields.map((field) => (
-  <div key={field.fieldName} style={{ display: 'flex', marginBottom: 12 }}>
-    <div style={{ fontWeight: 'bold', minWidth: 120 }}>{field.labelKey}:</div>
-    <div>{getFieldValue(field.fieldName)}</div>
-  </div>
-))}
+                <div key={field.fieldName} style={{ display: 'flex', marginBottom: 12 }}>
+                  <div style={{ fontWeight: 'bold', minWidth: 120 }}>{getFieldLabel(field.labelKey)}:</div>
+                  <div>{getFieldValue(field.fieldName)}</div>
+                </div>
+              ))}
             </div>
           </>
         )}
