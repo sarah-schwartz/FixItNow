@@ -5,7 +5,7 @@ import { Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 import { Loader } from 'lucide-react';
 import axios from '../services/axiosInstance';
-import {getFieldLabel} from "../constants/constants"
+import { getFieldLabel } from "../constants/constants"
 
 const { Paragraph, Text, Title } = Typography;
 const { TextArea } = Input;
@@ -362,19 +362,24 @@ const TicketDetails = () => {
               placeholder="כתוב כאן את תגובתך..."
               style={{ marginBottom: 12 }}
             />
-            <Button type="primary" onClick={handleReply} loading={loading}>
-              שלח מענה
-            </Button>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
+              <Button type="primary" onClick={handleReply} loading={loading}>
+                שלח מענה
+              </Button>
+              <Button
+                type="primary"
+                ghost
+                onClick={markAsHandled}
+                loading={loading}
+              >
+                סמן כטופלה
+              </Button>
+            </div>
+
           </Card>
         </Card>
       )}
-      {ticket.status !== 'closed' && (
-        <div style={{ marginTop: 24, textAlign: 'center' }}>
-          <Button type="default" danger onClick={markAsHandled}>
-            סמן כטופלה
-          </Button>
-        </div>
-      )}
+
     </Layout>
   );
 };
