@@ -111,14 +111,14 @@ async function getAllTickets(req, res) {
 
 async function getOpenTicketsByAssignedUser(req, res) {
     try {
-        const { userID } = req.params;
+        const { id } = req.params;
 
-        if (!userID) {
+        if (!id) {
             return res.status(400).json({ message: 'User ID is required in params' });
         }
 
         const openTickets = await Ticket.find({
-            assignedTo: userID,
+            assignedTo: id,
             status: { $ne: 'closed' }
         })
             .populate('createdBy', 'userName email role') 

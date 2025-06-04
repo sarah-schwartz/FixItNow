@@ -24,7 +24,7 @@ router.get('/getAllOpenTickets', verifyToken, getAllOpenTickets);
 
 router.get('/', verifyToken, getAllTickets);
 
-router.get('/getOpenTicketsByAssignedUser', verifyToken, getOpenTicketsByAssignedUser);
+router.get('/assigned-to-me/:id', getOpenTicketsByAssignedUser);
 
 
 router.put('/setStatus/:id',setStatus)
