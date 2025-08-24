@@ -3,24 +3,24 @@ import { getPriorityLabel, getCategoryLabel, getStatusLabel } from '../constants
 
 export const getTicketsColumns = () => [
   {
-    title: 'שם עובד',
+    title: 'Employee Name',
     dataIndex: 'name',
     key: 'name',
     render: text => <a>{text}</a>,
   },
   {
-    title: 'קטגוריה',
+    title: 'Category',
     dataIndex: 'category',
     key: 'category',
     render: (catKey) => getCategoryLabel(catKey)
   },
   {
-    title: 'תאריך',
+    title: 'Date',
     dataIndex: 'date',
     key: 'date',
   },
   {
-    title: 'דחיפות',
+    title: 'Priority',
     dataIndex: 'tags',
     key: 'tags',
     render: (priority) => {
@@ -34,7 +34,7 @@ export const getTicketsColumns = () => [
     },
   },
   {
-    title: 'סטטוס',
+    title: 'Status',
     dataIndex: 'status',
     key: 'status',
     render: (status) => {

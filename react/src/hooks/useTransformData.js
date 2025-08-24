@@ -14,29 +14,29 @@ const useTransformData = (ticket) => {
         setLoading(true);
         setError(null);
 
-        // שליפת שם המשתמש
+        // Fetch user name
         const userRes = await axios.get("/auth/me", {
           withCredentials: true,
           headers: { "Content-Type": "application/json" },
         });
 
-        // שליפת שם הקטגוריה לפי ID
+        // Fetch category name by ID
         const catRes = await axios.get(
-          `http:///Categories/getCategoryNameById/${ticket.type}`,
+          `http://localhost:8080/Categories/getCategoryNameById/${ticket.type}`,
           { headers: { "Content-Type": "application/json" } }
         );
 
-        // המרה של תאריך
+        // Date formatting
         const formatDate = (iso) =>
           new Date(iso).toLocaleDateString("he-IL");
 
-        // בניית אובייקט מתורגם
+        // Build transformed object
         const transformed = {
           key: ticket._id,
           name: userRes.data.userName,
-          category: catRes.data, // חשוב שהשרת יחזיר מחרוזת ישירה
+          category: catRes.data,
           date: formatDate(ticket.createdAt),
-          tags: ["רגיל"],
+          tags: ["normal"],
           status: ticket.status,
         };
 

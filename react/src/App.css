@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap');
+
 .swal2-rtl {
   direction: rtl;
   text-align: right;
@@ -117,9 +119,6 @@
     opacity: 1;
   }
 }
-
-/* Font face for the logo - אם תרצה להשתמש בפונט מיוחד */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap');
 
 .modern-animated-logo {
   font-family: 'Orbitron', sans-serif;
