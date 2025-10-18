@@ -1,4 +1,3 @@
-// hooks/useTickets.js
 import { useState, useEffect } from 'react';
 import axios from '../services/axiosInstance';
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Space, Select, Input } from 'antd';
 import { PRIORITY_LABELS_HE, STATUS_LABELS_HE } from '../constants/constants';
 

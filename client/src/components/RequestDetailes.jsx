@@ -96,14 +96,13 @@ const TicketDetails = () => {
         } else {
           setResponses([]);
         }
-
-        // שליפת שמות משתמשים לפנייה ולתגובות
+        // Fetch usernames for the inquiry and the responses
         const userIdsToFetch = new Set();
 
-        // מזהה היוצר של הפנייה
+        // ID of the user who created the ticket
         if (res.data.createdBy) userIdsToFetch.add(res.data.createdBy);
 
-        // מזהי היוצרים של התגובות
+        // IDs of the users who created the responses
         fullResponses.forEach(resp => {
           if (resp.createdBy) userIdsToFetch.add(resp.createdBy);
           if (resp.sender) userIdsToFetch.add(resp.sender);
@@ -180,7 +179,7 @@ const TicketDetails = () => {
 
         const res = await axios.post('http://localhost:8080/response/addResponseToTicket', {
           ticketId: ticket._id,
-          createdBy: currentUser.id, // Send user's ObjectId, not username
+          createdBy: currentUser.id, 
           content: newResponse.content
         });
 
@@ -220,22 +219,9 @@ const TicketDetails = () => {
         }
       }
     };
-    //const category = categories.find(c => c.name === 'folder_access');
 
     fetchCategory();
   }, [ticket]);
-
-  // const categories = [
-  //   {
-  //     name: "folder_access",
-  //     fields: [
-  //       { fieldName: "path", labelKey: "נתיב תיקייה" },
-  //       { fieldName: "permission", labelKey: "הרשאה" },
-  //       { fieldName: "folderName", labelKey: "שם תיקייה" }
-  //     ]
-  //   }
-  // ];
-
 
   const antIcon = <LoadingOutlined style={{ fontSize: 36 }} spin />;
 

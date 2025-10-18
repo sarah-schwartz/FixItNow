@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Form, Input, Select, Button, Layout, Card, Divider } from 'antd';
 import { UserOutlined, LockOutlined, GoogleOutlined, MailOutlined, RollbackOutlined, SelectOutlined, TeamOutlined } from '@ant-design/icons';
 import { useForm, Controller } from 'react-hook-form';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import axios from '../services/axiosInstance';
 const { Option } = Select;
 

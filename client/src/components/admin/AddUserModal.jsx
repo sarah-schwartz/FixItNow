@@ -1,11 +1,10 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Modal, Form, Input, Select, Button, Typography, Divider } from 'antd';
 import { UserOutlined, MailOutlined, LockOutlined, TeamOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { useForm, Controller } from 'react-hook-form';
 
 const { Option } = Select;
-const { Title } = Typography; // Text removed as not directly used
-
+const { Title } = Typography; 
 const styles = {
   modalTitleContainer: {
     display: 'flex',
@@ -15,7 +14,7 @@ const styles = {
   },
   modalTitleIcon: {
     fontSize: '24px',
-    color: '#007AFF', // Primary blue
+    color: '#007AFF', 
   },
   modalTitleText: {
     margin: 0,
@@ -24,7 +23,7 @@ const styles = {
     color: '#2c3e50',
   },
   formItem: {
-    marginBottom: '20px', // Consistent spacing
+    marginBottom: '20px', 
   },
   modalActions: {
     display: 'flex',
@@ -35,7 +34,7 @@ const styles = {
   submitButton: {
     borderRadius: '8px',
     minWidth: '120px',
-    backgroundColor: '#007AFF', // Primary blue for main action
+    backgroundColor: '#007AFF', 
     borderColor: '#007AFF',
   },
   cancelButtonModal: {
@@ -43,7 +42,7 @@ const styles = {
     minWidth: '100px',
   },
   inputPrefixIcon: {
-    color: 'rgba(0,0,0,0.35)' // Softer color for input prefixes
+    color: 'rgba(0,0,0,0.35)' 
   }
 };
 
@@ -51,15 +50,12 @@ const AddUserModal = ({ visible, onClose, onSubmit }) => {
   const { control, handleSubmit, reset, watch, formState: { errors } } = useForm({ /* ... (same defaultValues) ... */ });
   const password = watch('password');
 
-  useEffect(() => { /* ... (same effect) ... */ }, [visible, reset]);
-  const handleFormSubmit = async (data) => { /* ... (same submission logic) ... */ };
-
   return (
     <Modal
       open={visible}
       onCancel={onClose}
       footer={null}
-      width={520} // Slightly wider for better form layout
+      width={520} 
       centered
       style={{ direction: 'rtl' }}
     >
@@ -92,7 +88,6 @@ const AddUserModal = ({ visible, onClose, onSubmit }) => {
           />
         </Form.Item>
 
-        {/* ... (Email, Password, Confirm Password Form.Items with similar styling adjustments for prefix and placeholder) ... */}
          <Form.Item
           label="כתובת מייל"
           validateStatus={errors.email ? 'error' : ''}

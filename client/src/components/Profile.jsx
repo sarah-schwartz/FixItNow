@@ -38,8 +38,6 @@ const ProfilePage = () => {
         
         if (err.response?.status === 401) {
           setError('אנא התחבר מחדש למערכת');
-          // אפשר להפנות לדף התחברות
-          // window.location.href = '/login';
         } else {
           setError('שגיאה בטעינת הפרופיל');
         }

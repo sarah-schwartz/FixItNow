@@ -12,18 +12,18 @@ const styles = {
   modalIconContainer: {
     marginBottom: '16px',
   },
-  modalIcon: { // Changed from deleteModalIcon
+  modalIcon: { 
     fontSize: '48px',
-    color: '#007AFF', // Primary blue for icon
+    color: '#007AFF', 
   },
-  modalTitle: { // Changed from deleteModalTitle
+  modalTitle: { 
     marginBottom: '12px',
     fontSize: '22px',
     fontWeight: 600,
     color: '#2c3e50',
   },
   userToDeleteInfo: {
-    background: '#F4F5F7', // Light gray background
+    background: '#F4F5F7', 
     padding: '16px',
     borderRadius: '8px',
     marginBottom: '20px',
@@ -31,11 +31,11 @@ const styles = {
     border: '1px solid #E0E0E0',
   },
   userIcon: {
-    marginRight: '8px', // RTL: marginLeft
+    marginRight: '8px', 
     color: '#8e8e93',
   },
   userNameText: {
-    fontWeight: 500, // Semi-bold
+    fontWeight: 500, 
     color: '#2c3e50',
   },
   userEmailDelete: {
@@ -44,18 +44,17 @@ const styles = {
     color: '#8e8e93',
     marginTop: '4px',
   },
-  warningText: { // Changed from deleteWarningText
+  warningText: { 
     display: 'block',
     marginBottom: '24px',
     fontSize: '15px',
-    color: '#2c3e50', // Primary text color for warning
+    color: '#2c3e50', 
     lineHeight: '1.6',
   },
   modalDivider: {
     margin: '0 0 24px 0',
   },
-  modalActions: { // Changed from deleteModalActions
-    display: 'flex',
+  modalActions: { 
     justifyContent: 'center',
     gap: '12px',
   },
@@ -63,16 +62,12 @@ const styles = {
     borderRadius: '8px',
     minWidth: '120px',
   },
-  confirmButton: { // Changed from confirmDeleteButton
+  confirmButton: { 
     borderRadius: '8px',
     minWidth: '120px',
-    // No longer danger, AntD default primary or just default
-    // To make it look like a primary action:
     backgroundColor: '#007AFF',
     borderColor: '#007AFF',
     color: '#FFFFFF',
-    // If you want a more subtle delete, use type="default" and style accordingly
-    // e.g. color: '#007AFF', borderColor: '#007AFF' for an outline button
   },
 };
 
@@ -85,8 +80,8 @@ const DeleteUserModal = ({ visible, onClose, onConfirm, user }) => {
       onCancel={onClose}
       footer={null}
       centered
-      width={440} // Adjusted width
-      closable={true} // User can close with 'x'
+      width={440}
+      closable={true} 
     >
       <div style={styles.deleteModalContent}>
         <div style={styles.modalIconContainer}>
@@ -112,10 +107,9 @@ const DeleteUserModal = ({ visible, onClose, onConfirm, user }) => {
             ביטול
           </Button>
           <Button
-            // type="primary" // Use default or primary based on desired emphasis
             icon={<DeleteOutlined />}
             onClick={onConfirm}
-            style={styles.confirmButton} // No longer 'danger'
+            style={styles.confirmButton} 
             size="large"
           >
             כן, מחק משתמש

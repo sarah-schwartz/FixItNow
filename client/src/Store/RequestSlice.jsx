@@ -43,7 +43,7 @@ export const submitNewRequest = createAsyncThunk(
         description,
         createdBy,
         assignedTo,
-        fieldValues, // Form input values from component
+        fieldValues, 
       } = requestData;
 
       const state = getState();

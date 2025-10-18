@@ -1,5 +1,3 @@
-// components/MyRequests.js
-import React from 'react';
 import { Table, Layout } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useTickets } from '../hooks/useTickets';

@@ -8,12 +8,11 @@ const { Option } = Select;
 const styles = {
   userActionsContainer: {
     marginBottom: '24px',
-    padding: '16px', // Added padding inside the actions container
-    backgroundColor: '#FFFFFF', // Ensure it's on white if card has different bg
-    borderRadius: '8px', // Rounded corners for the actions section itself
-   // boxShadow: '0 2px 8px rgba(0,0,0,0.06)', // Subtle shadow for the actions section
+    padding: '16px',
+    backgroundColor: '#FFFFFF', 
+    borderRadius: '8px', 
   },
-  topRow: { // For Title and Add User Button
+  topRow: { 
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -34,44 +33,40 @@ const styles = {
   },
   userCountIcon: {
     fontSize: '20px',
-    color: '#007AFF', // Primary blue
+    color: '#007AFF', 
   },
   userCountTitle: {
     margin: 0,
-    fontSize: '20px', // Slightly larger
+    fontSize: '20px', 
     fontWeight: 600,
-    color: '#2c3e50', // Dark text
+    color: '#2c3e50', 
   },
   userCountNumber: {
     fontSize: '14px',
-    color: '#8e8e93', // Secondary text
+    color: '#8e8e93', 
   },
-  mainActionsGroup: { // For Add User button
-    // Buttons here
-  },
-  filtersRow: { // For Search and Role Filter
+  filtersRow: { 
     display: 'flex',
     gap: '16px',
     alignItems: 'center',
-    flexWrap: 'wrap', // Allow wrapping
+    flexWrap: 'wrap', 
   },
   searchInput: {
-    flexGrow: 1, // Allow search to take available space
-    minWidth: '200px', // Minimum width for search
+    flexGrow: 1, 
+    minWidth: '200px', 
     borderRadius: '8px',
   },
   roleSelect: {
-    minWidth: '180px', // Width for role select
+    minWidth: '180px', 
     borderRadius: '8px',
   },
-  refreshButtonContainer: { // To align refresh button with filters
-    marginLeft: 'auto', // Pushes refresh to the right in LTR
+  refreshButtonContainer: { 
+    marginLeft: 'auto',
   },
   addButton: {
     borderRadius: '8px',
-    backgroundColor: '#007AFF', // Primary blue for add button
+    backgroundColor: '#007AFF', 
     borderColor: '#007AFF',
-    // color: '#FFFFFF' // if type="primary" is used, AntD handles this
   },
   refreshButton: {
     borderRadius: '8px',
@@ -163,7 +158,6 @@ const UserActions = ({
           </Tooltip>
         </div>
       </div>
-      {/* No main divider at the end if list follows directly */}
     </div>
   );
 };

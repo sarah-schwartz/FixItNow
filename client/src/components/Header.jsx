@@ -1,6 +1,6 @@
-import React, { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Layout, Avatar, Dropdown, Button, Badge, theme } from 'antd';
-import { BellOutlined, UserOutlined, MenuOutlined } from '@ant-design/icons';
+import { UserOutlined, MenuOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import Loader from './Loader';
 import axios from '../services/axiosInstance';
@@ -87,25 +87,6 @@ const Header = () => {
         alignItems: 'center',
         gap: '16px'
       }}>
-        {/* <Badge count={3} dot>
-          <Button
-            type="text"
-            icon={<BellOutlined style={{ color: 'white', fontSize: '18px' }} />}
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'rgba(255, 255, 255, 0.1)',
-              transition: 'all 0.3s ease'
-            }}
-          />
-        </Badge> */}
-
-
-
         <Dropdown
           menu={{ items: menuItems, onClick: handleMenuClick }}
           placement="bottomRight"

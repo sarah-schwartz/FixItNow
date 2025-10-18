@@ -1,4 +1,3 @@
-
 // Category labels for Hebrew translation
 export const CATEGORY_LABELS_HE = {
   database_access: 'גישה למסד נתונים',

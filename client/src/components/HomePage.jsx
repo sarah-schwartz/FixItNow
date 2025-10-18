@@ -1,7 +1,5 @@
-// components/HomePage.js
 import { Row, Col, Layout, Spin, Typography } from 'antd';
 import React, { lazy, Suspense, useEffect } from 'react'; // useEffect מיובא אך לא בשימוש ישיר בקוד זה, אולי נדרש ללוגיקה אחרת שהסרת
-// import { useSelector, useDispatch } from 'react-redux'; // אם אינך משתמש ב-Redux כאן, ניתן להסיר
 import {
   ProfileOutlined,
   PlusCircleOutlined,
@@ -199,9 +197,6 @@ const HomePage = () => {
           }}
         />
       </Content>
-
-      {/* הסרת Suspense מיותר שהיה כאן אם אינו בשימוש לפוטר או משהו דומה */}
-      {/* <Suspense fallback={ ... }> ... </Suspense> */}
 
       <style >{`
          @keyframes float {
