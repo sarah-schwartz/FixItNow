@@ -43,7 +43,7 @@ export const submitNewRequest = createAsyncThunk(
         description,
         createdBy,
         assignedTo,
-        fieldValues, // קלט מוכן מהקומפוננטה
+        fieldValues, // Form input values from component
       } = requestData;
 
       const state = getState();
@@ -60,7 +60,7 @@ export const submitNewRequest = createAsyncThunk(
         type,
         createdBy,
         assignedTo: assignedTo || createdBy,
-        fieldValues, // פשוט השתמש בזה
+        fieldValues,
       };
 
       const response = await axios.post('/Ticket', ticketData);

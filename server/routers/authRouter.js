@@ -6,14 +6,14 @@ const jwt = require('jsonwebtoken');
 const { authenticateJWT } = require("../middleware/auth");
 const User = require("../models/User");
 
-// התחברות רגילה
+// Local authentication routes
 router.post("/login", authController.login);
 router.post("/register", authController.register);
 
-// התחברות עם גוגל
+// Google OAuth authentication
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
-// חזרה מגוגל
+// Google OAuth callback handler
 router.get("/google/callback",
     passport.authenticate("google", {
         failureRedirect: "/login",
@@ -49,12 +49,12 @@ router.get("/google/callback",
     }
 );
 
-// בדיקה אם מחובר
+// Get authenticated user information
 router.get("/user", authenticateJWT, (req, res) => {
     res.send(req.user);
 });
 
-// יציאה מהחשבון
+// Logout and clear authentication cookies
 router.get("/logout", (req, res) => {
     res.clearCookie("token", {
         httpOnly: true,
@@ -67,7 +67,7 @@ router.get("/logout", (req, res) => {
     res.json({ message: "Logged out successfully" });
 });
 
-// קבלת פרטי המשתמש מהטוקן
+// Get user details from JWT token
 router.get("/me", authenticateJWT, (req, res) => {
     res.json({
         id: req.user.id,

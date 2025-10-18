@@ -3,12 +3,14 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const User = require("../models/User");
 
 passport.serializeUser((user, done) => {
-  done(null, user._id); // שומר רק את ה-ID במזהה הסשן
+  // Store only user ID in session
+  done(null, user._id);
 });
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const user = await User.findById(id); // טוען את המשתמש המלא מהמסד
+    // Load complete user data from database
+    const user = await User.findById(id);
     done(null, user);
   } catch (err) {
     done(err, null);

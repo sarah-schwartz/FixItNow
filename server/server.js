@@ -7,16 +7,11 @@ const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const passport = require("passport");
 
-// טען משתנים מהסביבה
+// Initialize environment variables and authentication strategy
 dotenv.config();
+require("./config/passport");
 
-// ✅ טען את הגדרת האסטרטגיה של גוגל
-require("./config/passport"); // שימי לב לשנות לנתיב המתאים
-
-// יצירת אפליקציית אקספרס
 const app = express();
-
-// הגדרות CORS
 app.use(cors({
   origin: "http://localhost:5173",
   credentials: true,
@@ -28,23 +23,23 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(bodyParser.json());
 
-// ✅ ניהול סשן
+// Configure session management (set secure=true in production with HTTPS)
 app.use(session({
-  secret: "your-session-secret", // שימי כאן משהו בטוח
+  secret: "your-session-secret",
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false } // שימי true רק אם את על HTTPS
+  cookie: { secure: false }
 }));
 
-// ✅ הפעלת Passport
+// Initialize authentication middleware
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ✅ מסלולים
+// Import route handlers
 const responseRouter = require("./routers/responseRouter");
 const ticketTypeRouter = require("./routers/ticketTypeRouter");
 const userRouter = require("./routers/userRouter");
-const authRouter = require("./routers/authRouter"); // כאן כנראה נמצאים /auth/google וכו'
+const authRouter = require("./routers/authRouter");
 const sendEmail = require("./routers/emailRouter");
 const categoryRouter = require("./routers/categoryRouter");
 const ticketRouter = require("./routers/ticketRouter");
@@ -59,12 +54,12 @@ app.use("/Ticket", ticketRouter);
 
 app.get("/", (req, res) => res.send("Server is running"));
 
-// התחברות למסד נתונים
+// Connect to MongoDB database
 mongoose.connect(process.env.DB_URL)
   .then(() => console.log("Connected to MongoDB…"))
   .catch(err => console.error("Connection failed…", err));
 
-// הפעלת השרת
+// Start the server
 const port = process.env.PORT || 8080;
 app.listen(port, () =>
   console.log(`Server running on http://localhost:${port}`)

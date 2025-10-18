@@ -1,4 +1,4 @@
-// middleware/roleAuth.js
+// Role-based authorization middleware for checking user roles
 const checkRole = (...allowedRoles) => {
     return (req, res, next) => {
         if (!req.user) {

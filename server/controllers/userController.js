@@ -1,12 +1,6 @@
 const res = require("express/lib/response")
 const User = require("../models/User")
 
-
-// async function addUser(req,res){
-//     let newC = await new User(req.body)
-//     await newC.save()
-//     res.json({ message: "created successfully"+newC });
-// }
 async function getUserbyName(req, res) {
     try {
         const user = await User.findOne({ userName: req.params.userName });

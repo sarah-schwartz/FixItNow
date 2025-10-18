@@ -39,13 +39,13 @@ async function addResponseToTicket(req,res) {
             return res.status(400).json({ message: 'חסרים שדות נדרשים: ticketId, createdBy, content' });
         }
 
-        // ודא שהפנייה קיימת
+        // Verify ticket exists
         const ticket = await Ticket.findById(ticketId);
         if (!ticket) {
             return res.status(404).json({ message: 'Ticket not found' });
         }
 
-        // צור תגובה חדשה
+        // Create new response
         const newResponse = new Response({
             ticketId,
             createdBy,
@@ -54,7 +54,7 @@ async function addResponseToTicket(req,res) {
 
         await newResponse.save();
 
-        // עדכן את הפנייה עם מזהה התגובה
+        // Update ticket with response reference
         ticket.responses.push(newResponse._id);
         await ticket.save();
 

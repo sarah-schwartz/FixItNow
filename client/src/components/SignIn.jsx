@@ -176,7 +176,6 @@ const SignIn = () => {
                     prefix={<TeamOutlined />}
                     size="large"
                     style={{ textAlign: 'right' }}
-                  //allowClear
                   >
                     <Option value="developer">מפתח</Option>
                     <Option value="support">תומך</Option>

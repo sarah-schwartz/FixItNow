@@ -59,8 +59,7 @@ const TicketDetails = () => {
 
         if (err.response?.status === 401) {
           setError('אנא התחבר מחדש למערכת');
-          // אפשר להפנות לדף התחברות
-          // window.location.href = '/login';
+
         } else {
           setError('שגיאה בטעינת הפרופיל');
         }
@@ -181,11 +180,11 @@ const TicketDetails = () => {
 
         const res = await axios.post('http://localhost:8080/response/addResponseToTicket', {
           ticketId: ticket._id,
-          createdBy: currentUser.id, // שימי לב: כאן צריך לשלוח את ה־ObjectId של המשתמש, לא את השם
+          createdBy: currentUser.id, // Send user's ObjectId, not username
           content: newResponse.content
         });
 
-        // את התגובה שחזרה מהשרת את יכולה להוסיף לרשימה:
+        // Add the new response to the list
         setResponses([...responses, newResponse]);
         setReply('');
         if (currentUser.id == ticket._id) {
